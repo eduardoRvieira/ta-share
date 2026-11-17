@@ -44,4 +44,15 @@ public class EquipamentoController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    // PUT: http://localhost:8080/api/equipamentos/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<Equipamento> atualizar(@PathVariable Integer id, @RequestBody Equipamento equipamento) {
+        if (!equipamentoService.buscarPorId(id).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        equipamento.setId(id);
+        Equipamento equipamentoAtualizado = equipamentoService.salvar(equipamento);
+        return ResponseEntity.ok(equipamentoAtualizado);
+    }
 }

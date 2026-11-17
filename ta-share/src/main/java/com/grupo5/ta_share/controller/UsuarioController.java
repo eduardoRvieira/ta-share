@@ -44,4 +44,15 @@ public class UsuarioController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    // PUT: http://localhost:8080/api/usuarios/{id}
+    @PutMapping("/{id}")
+    public ResponseEntity<Usuario> atualizar(@PathVariable Integer id, @RequestBody Usuario usuario) {
+        if (!usuarioService.buscarPorId(id).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        usuario.setId(id);
+        Usuario usuarioAtualizado = usuarioService.salvar(usuario);
+        return ResponseEntity.ok(usuarioAtualizado);
+    }
 }
