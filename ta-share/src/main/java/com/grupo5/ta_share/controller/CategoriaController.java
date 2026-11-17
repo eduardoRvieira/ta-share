@@ -2,6 +2,7 @@ package com.grupo5.ta_share.controller;
 
 import com.grupo5.ta_share.model.Categoria;
 import com.grupo5.ta_share.service.CategoriaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class CategoriaController {
 
     // POST: http://localhost:8080/api/categorias
     @PostMapping
-    public Categoria criar(@RequestBody Categoria categoria) {
+    public Categoria criar(@RequestBody @Valid Categoria categoria) {
         return categoriaService.salvar(categoria);
     }
 

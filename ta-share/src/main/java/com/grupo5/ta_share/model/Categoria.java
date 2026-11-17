@@ -1,6 +1,7 @@
 package com.grupo5.ta_share.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "categorias")
@@ -10,9 +11,11 @@ public class Categoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank(message = "O nome é obrigatório")
     @Column(nullable = false, length = 100)
     private String nome;
 
+    @NotBlank(message = "O nome é obrigatório")
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
