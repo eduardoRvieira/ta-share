@@ -1,7 +1,6 @@
 package com.grupo5.ta_share.model;
 
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 
 import java.time.LocalDateTime;
 
