@@ -2,6 +2,7 @@ package com.grupo5.ta_share.controller;
 
 import com.grupo5.ta_share.model.Emprestimo;
 import com.grupo5.ta_share.service.EmprestimoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class EmprestimoController {
 
     // POST: http://localhost:8080/api/emprestimos
     @PostMapping
-    public Emprestimo criar(@RequestBody Emprestimo emprestimo) {
+    public Emprestimo criar(@RequestBody @Valid Emprestimo emprestimo) {
         return emprestimoService.salvar(emprestimo);
     }
 

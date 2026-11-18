@@ -2,6 +2,7 @@ package com.grupo5.ta_share.controller;
 
 import com.grupo5.ta_share.model.Usuario;
 import com.grupo5.ta_share.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class UsuarioController {
 
     // POST: http://localhost:8080/api/usuarios
     @PostMapping
-    public Usuario criar(@RequestBody Usuario usuario) {
+    public Usuario criar(@RequestBody @Valid Usuario usuario) {
         return usuarioService.salvar(usuario);
     }
 

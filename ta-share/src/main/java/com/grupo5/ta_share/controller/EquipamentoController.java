@@ -2,6 +2,7 @@ package com.grupo5.ta_share.controller;
 
 import com.grupo5.ta_share.model.Equipamento;
 import com.grupo5.ta_share.service.EquipamentoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class EquipamentoController {
 
     // POST: http://localhost:8080/api/equipamentos
     @PostMapping
-    public Equipamento criar(@RequestBody Equipamento equipamento) {
+    public Equipamento criar(@RequestBody @Valid Equipamento equipamento) {
         return equipamentoService.salvar(equipamento);
     }
 
