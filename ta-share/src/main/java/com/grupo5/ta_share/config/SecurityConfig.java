@@ -24,9 +24,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/usuarios/**").permitAll() // Libera temporariamente para testes de cadastro
                         .requestMatchers("/api/categorias/**", "/api/equipamentos/**").permitAll() // Se quiser liberar consultas livres
-                        .anyRequest().authenticated() // Qualquer outra rota exige autenticação
-                )
-                .httpBasic(httpBasic -> {}); // Habilita autenticação básica (usuário e senha no header) para testar no Postman
+                        .anyRequest().permitAll() // Qualquer outra rota exige autenticação
+                );
+                //.httpBasic(httpBasic -> {}); // Habilita autenticação básica (usuário e senha no header) para testar no Postman
 
         return http.build();
     }

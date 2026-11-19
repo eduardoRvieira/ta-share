@@ -48,7 +48,7 @@ public class CategoriaController {
 
     // PUT: http://localhost:8080/api/categorias/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Categoria> atualizar(@PathVariable Integer id, @RequestBody Categoria categoria) {
+    public ResponseEntity<Categoria> atualizar(@PathVariable Integer id, @RequestBody @Valid Categoria categoria) {
         if (!categoriaService.buscarPorId(id).isPresent()) {
             return ResponseEntity.notFound().build();
         }

@@ -2,6 +2,7 @@ package com.grupo5.ta_share.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -17,16 +18,20 @@ public class Equipamento {
     @Column(nullable = false, length = 150)
     private String nome;
 
+    @NotBlank(message = "O patrimônio é obrigatório")
     @Column(nullable = false, unique = true, length = 50)
     private String patrimonio;
 
+    @NotNull(message = "A categoria é obrigatório")
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
+    @NotBlank(message = "O estado de conservação é obrigatório")
     @Column(name = "estado_conservacao", nullable = false, length = 50)
     private String estadoConservacao;
 
+    @NotBlank(message = "Obrigatório o status do item")
     @Column(name = "status_item", nullable = false, length = 50)
     private String statusItem;
 

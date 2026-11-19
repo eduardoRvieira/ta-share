@@ -1,6 +1,9 @@
 package com.grupo5.ta_share.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDate;
 
 @Entity
@@ -11,10 +14,12 @@ public class Emprestimo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotNull(message = "O usuario é obrigatório")
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    @NotNull(message = "O equipamento é obrigatório")
     @ManyToOne
     @JoinColumn(name = "equipamento_id", nullable = false)
     private Equipamento equipamento;
@@ -22,6 +27,7 @@ public class Emprestimo {
     @Column(name = "data_emprestimo", nullable = false)
     private LocalDate dataEmprestimo;
 
+    @NotNull(message = "Data obrigatória")
     @Column(name = "data_devolucao_prevista", nullable = false)
     private LocalDate dataDevolucaoPrevista;
 
@@ -55,7 +61,7 @@ public class Emprestimo {
     public void setDataDevolucaoReal(LocalDate dataDevolucaoReal) { this.dataDevolucaoReal = dataDevolucaoReal; }
 
     public String getStatus() { return status; }
-    public void status(String status) { this.status = status; }
+    public void setStatus(String status) { this.status = status; }
 
     public String getObservacoes() { return observacoes; }
     public void setObservacoes(String observacoes) { this.observacoes = observacoes; }

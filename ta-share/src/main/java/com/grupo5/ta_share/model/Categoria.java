@@ -15,7 +15,6 @@ public class Categoria {
     @Column(nullable = false, length = 100)
     private String nome;
 
-    @NotBlank(message = "O nome é obrigatório")
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
