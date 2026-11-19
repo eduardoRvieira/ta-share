@@ -48,7 +48,7 @@ public class UsuarioController {
 
     // PUT: http://localhost:8080/api/usuarios/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> atualizar(@PathVariable Integer id, @RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> atualizar(@PathVariable Integer id, @RequestBody @Valid Usuario usuario) {
         if (!usuarioService.buscarPorId(id).isPresent()) {
             return ResponseEntity.notFound().build();
         }

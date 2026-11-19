@@ -4,6 +4,7 @@ package com.grupo5.ta_share.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.br.CPF;
 
 import java.time.LocalDateTime;
 
@@ -24,10 +25,11 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    @NotBlank(message = "Senha obrigatóoria")
+    @NotBlank(message = "Senha obrigatória")
     @Column(nullable = false)
     private String senha;
 
+    @CPF(message = "CPF inválido")
     @NotBlank(message = "CPF é obrigatório")
     @Column(nullable = false, unique = true, length = 14)
     private String cpf;

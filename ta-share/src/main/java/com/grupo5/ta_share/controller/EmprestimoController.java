@@ -48,7 +48,7 @@ public class EmprestimoController {
 
     // PUT: http://localhost:8080/api/emprestimos/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Emprestimo> atualizar(@PathVariable Integer id, @RequestBody Emprestimo emprestimo) {
+    public ResponseEntity<Emprestimo> atualizar(@PathVariable Integer id, @RequestBody @Valid Emprestimo emprestimo) {
         if (!emprestimoService.buscarPorId(id).isPresent()) {
             return ResponseEntity.notFound().build();
         }
