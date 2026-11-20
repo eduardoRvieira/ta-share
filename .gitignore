@@ -1,0 +1,14 @@
+# IDEs (IntelliJ / Eclipse / VS Code)
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# Java / Maven
+target/
+
+# Angular / Node (garantia extra)
+node_modules/
+dist/
+.angular/
