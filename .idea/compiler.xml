@@ -12,7 +12,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="ta-share" options="-parameters" />
+      <module name="ta-share" options="-parameters --add-exports java.xml/com.sun.org.apache.xalan.internal.lib=ALL-UNNAMED" />
     </option>
   </component>
 </project>

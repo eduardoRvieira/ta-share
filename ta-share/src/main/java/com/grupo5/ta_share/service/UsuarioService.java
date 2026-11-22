@@ -1,46 +1,46 @@
-package com.grupo5.ta_share.service;
+    package com.grupo5.ta_share.service;
 
-import com.grupo5.ta_share.model.Usuario;
-import com.grupo5.ta_share.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+    import com.grupo5.ta_share.model.Usuario;
+    import com.grupo5.ta_share.repository.UsuarioRepository;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.security.crypto.password.PasswordEncoder;
+    import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+    import java.time.LocalDateTime;
+    import java.util.List;
+    import java.util.Optional;
 
-@Service
-public class UsuarioService {
+    @Service
+    public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+        @Autowired
+        private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+        @Autowired
+        private PasswordEncoder passwordEncoder;
 
-    public List<Usuario> listarTodos() {
-        return usuarioRepository.findAll();
-    }
-
-    public Optional<Usuario> buscarPorId(Integer id) {
-        return usuarioRepository.findById(id);
-    }
-
-    public Usuario salvar(Usuario usuario) {
-        // Criptografa a senha apenas se ela foi preenchida/alterada
-        if (usuario.getSenha() != null && !usuario.getSenha().startsWith("$2a$")) {
-            usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+        public List<Usuario> listarTodos() {
+            return usuarioRepository.findAll();
         }
 
-        if (usuario.getId() == null && usuario.getCriadoEms() == null) {
-            usuario.setCriadoEms(LocalDateTime.now());
+        public Optional<Usuario> buscarPorId(Integer id) {
+            return usuarioRepository.findById(id);
         }
 
-        return usuarioRepository.save(usuario);
-    }
+        public Usuario salvar(Usuario usuario) {
+            // Criptografa a senha apenas se ela foi preenchida/alterada
+            if (usuario.getSenha() != null && !usuario.getSenha().startsWith("$2a$")) {
+                usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
+            }
 
-    public void deletar(Integer id) {
-        usuarioRepository.deleteById(id);
+            if (usuario.getId() == null && usuario.getCriadoEms() == null) {
+                usuario.setCriadoEms(LocalDateTime.now());
+            }
+
+            return usuarioRepository.save(usuario);
+        }
+
+        public void deletar(Integer id) {
+            usuarioRepository.deleteById(id);
+        }
     }
-}
