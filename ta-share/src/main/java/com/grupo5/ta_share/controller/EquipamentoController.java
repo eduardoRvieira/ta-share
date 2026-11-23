@@ -1,9 +1,11 @@
 package com.grupo5.ta_share.controller;
 
-import com.grupo5.ta_share.model.Equipamento;
+import com.grupo5.ta_share.dto.request.EquipamentoRequestDTO;
+import com.grupo5.ta_share.dto.response.EquipamentoResponseDTO;
 import com.grupo5.ta_share.service.EquipamentoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,44 +18,35 @@ public class EquipamentoController {
     @Autowired
     private EquipamentoService equipamentoService;
 
-    // GET: http://localhost:8080/api/equipamentos
     @GetMapping
-    public List<Equipamento> listar() {
+    public List<EquipamentoResponseDTO> listar() {
         return equipamentoService.listarTodos();
     }
 
-    // POST: http://localhost:8080/api/equipamentos
     @PostMapping
-    public Equipamento criar(@RequestBody @Valid Equipamento equipamento) {
-        return equipamentoService.salvar(equipamento);
+    public ResponseEntity<EquipamentoResponseDTO> criar(@RequestBody @Valid EquipamentoRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(equipamentoService.criar(dto));
     }
 
-    // GET por ID: http://localhost:8080/api/equipamentos/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Equipamento> buscarPorId(@PathVariable Integer id) {
+    public ResponseEntity<EquipamentoResponseDTO> buscarPorId(@PathVariable Integer id) {
         return equipamentoService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE: http://localhost:8080/api/equipamentos/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-        if (equipamentoService.buscarPorId(id).isPresent()) {
-            equipamentoService.deletar(id);
+        if (equipamentoService.deletar(id)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
 
-    // PUT: http://localhost:8080/api/equipamentos/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Equipamento> atualizar(@PathVariable Integer id, @RequestBody @Valid Equipamento equipamento) {
-        if (!equipamentoService.buscarPorId(id).isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-        equipamento.setId(id);
-        Equipamento equipamentoAtualizado = equipamentoService.salvar(equipamento);
-        return ResponseEntity.ok(equipamentoAtualizado);
+    public ResponseEntity<EquipamentoResponseDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid EquipamentoRequestDTO dto) {
+        return equipamentoService.atualizar(id, dto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
