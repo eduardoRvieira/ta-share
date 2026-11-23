@@ -1,9 +1,11 @@
 package com.grupo5.ta_share.controller;
 
-import com.grupo5.ta_share.model.Emprestimo;
+import com.grupo5.ta_share.dto.request.EmprestimoRequestDTO;
+import com.grupo5.ta_share.dto.response.EmprestimoResponseDTO;
 import com.grupo5.ta_share.service.EmprestimoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,44 +18,35 @@ public class EmprestimoController {
     @Autowired
     private EmprestimoService emprestimoService;
 
-    // GET: http://localhost:8080/api/emprestimos
     @GetMapping
-    public List<Emprestimo> listar() {
+    public List<EmprestimoResponseDTO> listar() {
         return emprestimoService.listarTodos();
     }
 
-    // POST: http://localhost:8080/api/emprestimos
     @PostMapping
-    public Emprestimo criar(@RequestBody @Valid Emprestimo emprestimo) {
-        return emprestimoService.salvar(emprestimo);
+    public ResponseEntity<EmprestimoResponseDTO> criar(@RequestBody @Valid EmprestimoRequestDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(emprestimoService.criar(dto));
     }
 
-    // GET por ID: http://localhost:8080/api/emprestimos/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Emprestimo> buscarPorId(@PathVariable Integer id) {
+    public ResponseEntity<EmprestimoResponseDTO> buscarPorId(@PathVariable Integer id) {
         return emprestimoService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // DELETE: http://localhost:8080/api/emprestimos/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Integer id) {
-        if (emprestimoService.buscarPorId(id).isPresent()) {
-            emprestimoService.deletar(id);
+        if (emprestimoService.deletar(id)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
     }
 
-    // PUT: http://localhost:8080/api/emprestimos/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Emprestimo> atualizar(@PathVariable Integer id, @RequestBody @Valid Emprestimo emprestimo) {
-        if (!emprestimoService.buscarPorId(id).isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-        emprestimo.setId(id);
-        Emprestimo emprestimoAtualizado = emprestimoService.salvar(emprestimo);
-        return ResponseEntity.ok(emprestimoAtualizado);
+    public ResponseEntity<EmprestimoResponseDTO> atualizar(@PathVariable Integer id, @RequestBody @Valid EmprestimoRequestDTO dto) {
+        return emprestimoService.atualizar(id, dto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
