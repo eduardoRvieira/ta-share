@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { UsuarioService } from '../../services/usuario.service';
 
 export interface SessaoUsuario {
   id: number;
@@ -18,17 +19,33 @@ export interface SessaoUsuario {
 export class Login {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly usuarioService = inject(UsuarioService);
 
   protected readonly erro = signal<string | null>(null);
+  protected readonly aviso = signal<string | null>(null);
   protected readonly enviando = signal(false);
+  protected readonly modoCadastro = signal(false);
 
+  // Campos de login
   email = '';
   senha = '';
+
+  // Campos extras de cadastro
+  nome = '';
+  cpf = '';
+  telefone = '';
+
+  alternarModo(): void {
+    this.modoCadastro.update((v) => !v);
+    this.erro.set(null);
+    this.aviso.set(null);
+  }
 
   entrar(): void {
     if (!this.email.trim() || !this.senha.trim()) return;
 
     this.erro.set(null);
+    this.aviso.set(null);
     this.enviando.set(true);
 
     this.http.post<SessaoUsuario>('/api/auth/login', {
@@ -43,6 +60,37 @@ export class Login {
       error: (err) => {
         this.enviando.set(false);
         this.erro.set(err?.error?.message || 'E-mail ou senha inválidos.');
+      }
+    });
+  }
+
+  cadastrar(): void {
+    if (!this.nome.trim() || !this.email.trim() || !this.senha.trim() || !this.cpf.trim()) return;
+
+    this.erro.set(null);
+    this.aviso.set(null);
+    this.enviando.set(true);
+
+    this.usuarioService.criar({
+      nome: this.nome.trim(),
+      email: this.email.trim(),
+      senha: this.senha,
+      cpf: this.cpf.trim(),
+      telefone: this.telefone.trim() || null,
+      perfil: 'COMUM'
+    }).subscribe({
+      next: () => {
+        this.enviando.set(false);
+        this.modoCadastro.set(false);
+        this.nome = '';
+        this.cpf = '';
+        this.telefone = '';
+        this.senha = '';
+        this.aviso.set('Conta criada com sucesso! Agora faça login com seu e-mail e senha.');
+      },
+      error: (err) => {
+        this.enviando.set(false);
+        this.erro.set(err?.error?.message || 'Não foi possível criar a conta. Verifique os dados.');
       }
     });
   }

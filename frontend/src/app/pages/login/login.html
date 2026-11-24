@@ -1,11 +1,20 @@
 <section aria-labelledby="titulo-login">
-  <h2 id="titulo-login">Entrar</h2>
-  <p>Acesse sua conta no TA.share.</p>
+  <h2 id="titulo-login">{{ modoCadastro() ? 'Criar conta' : 'Entrar' }}</h2>
+  <p>
+    {{ modoCadastro()
+    ? 'Cadastre-se para acessar o TA.share.'
+    : 'Acesse sua conta no TA.share.' }}
+  </p>
+
+  @if (aviso()) {
+  <p role="status">{{ aviso() }}</p>
+  }
 
   @if (erro()) {
   <p role="alert">{{ erro() }}</p>
   }
 
+  @if (!modoCadastro()) {
   <form (ngSubmit)="entrar()">
     <div>
       <label for="email">E-mail</label>
@@ -21,4 +30,44 @@
       {{ enviando() ? 'Entrando...' : 'Entrar' }}
     </button>
   </form>
+
+  <div>
+    <button type="button" (click)="alternarModo()">Criar uma conta</button>
+  </div>
+  } @else {
+  <form (ngSubmit)="cadastrar()">
+    <div>
+      <label for="nome-cadastro">Nome</label>
+      <input id="nome-cadastro" name="nome" type="text" [(ngModel)]="nome" required>
+    </div>
+
+    <div>
+      <label for="email-cadastro">E-mail</label>
+      <input id="email-cadastro" name="email" type="email" [(ngModel)]="email" required>
+    </div>
+
+    <div>
+      <label for="cpf-cadastro">CPF</label>
+      <input id="cpf-cadastro" name="cpf" type="text" [(ngModel)]="cpf" required>
+    </div>
+
+    <div>
+      <label for="telefone-cadastro">Telefone</label>
+      <input id="telefone-cadastro" name="telefone" type="tel" [(ngModel)]="telefone">
+    </div>
+
+    <div>
+      <label for="senha-cadastro">Senha</label>
+      <input id="senha-cadastro" name="senha" type="password" [(ngModel)]="senha" required>
+    </div>
+
+    <button type="submit" [disabled]="enviando()">
+      {{ enviando() ? 'Cadastrando...' : 'Cadastrar' }}
+    </button>
+  </form>
+
+  <div>
+    <button type="button" (click)="alternarModo()">Já tenho conta (Entrar)</button>
+  </div>
+  }
 </section>
