@@ -2,8 +2,69 @@
   <h2 id="titulo-usuarios">Usuários</h2>
   <p>Cadastro e consulta de usuários do sistema.</p>
 
-  <section aria-label="Lista de usuários">
-    <h3>Usuários cadastrados</h3>
-    <p>Nenhum usuário carregado no momento.</p>
+  <section aria-labelledby="titulo-form-usuario">
+    <h3 id="titulo-form-usuario">Novo usuário</h3>
+    <form (ngSubmit)="salvar()">
+      <div>
+        <label for="nome-usuario">Nome</label>
+        <input id="nome-usuario" name="nome" type="text" [(ngModel)]="nome" required>
+      </div>
+
+      <div>
+        <label for="email-usuario">E-mail</label>
+        <input id="email-usuario" name="email" type="email" [(ngModel)]="email" required>
+      </div>
+
+      <div>
+        <label for="senha-usuario">Senha</label>
+        <input id="senha-usuario" name="senha" type="password" [(ngModel)]="senha" required>
+      </div>
+
+      <div>
+        <label for="cpf-usuario">CPF</label>
+        <input id="cpf-usuario" name="cpf" type="text" [(ngModel)]="cpf" required>
+      </div>
+
+      <div>
+        <label for="telefone-usuario">Telefone</label>
+        <input id="telefone-usuario" name="telefone" type="tel" [(ngModel)]="telefone">
+      </div>
+
+      <div>
+        <label for="perfil-usuario">Perfil</label>
+        <select id="perfil-usuario" name="perfil" [(ngModel)]="perfil" required>
+          <option value="" disabled>Selecione um perfil</option>
+          <option value="ADMIN">Administrador</option>
+          <option value="COMUM">Usuário comum</option>
+        </select>
+      </div>
+
+      <button type="submit">Cadastrar usuário</button>
+    </form>
+  </section>
+
+  <section aria-labelledby="titulo-lista-usuarios">
+    <h3 id="titulo-lista-usuarios">Usuários cadastrados</h3>
+
+    @if (carregando()) {
+    <p>Carregando usuários...</p>
+    } @else if (erro()) {
+    <p role="alert">{{ erro() }}</p>
+    } @else if (usuarios().length === 0) {
+    <p>Nenhum usuário cadastrado no momento.</p>
+    } @else {
+    <ul>
+      @for (usuario of usuarios(); track usuario.id) {
+      <li>
+        <strong>{{ usuario.nome }}</strong>
+        <span> — {{ usuario.email }}</span>
+        <span> — Perfil: {{ usuario.perfil }}</span>
+        @if (usuario.telefone) {
+        <span> — Telefone: {{ usuario.telefone }}</span>
+        }
+      </li>
+      }
+    </ul>
+    }
   </section>
 </section>
