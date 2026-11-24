@@ -27,4 +27,4 @@ export class EmprestimoService {
   deletar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
   }
-}s
+}
