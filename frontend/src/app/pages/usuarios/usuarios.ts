@@ -14,6 +14,7 @@ export class Usuarios implements OnInit {
   protected readonly usuarios = signal<UsuarioResponse[]>([]);
   protected readonly carregando = signal(false);
   protected readonly erro = signal<string | null>(null);
+  protected readonly editandoId = signal<number | null>(null);
 
   nome = '';
   email = '';
@@ -42,31 +43,86 @@ export class Usuarios implements OnInit {
     });
   }
 
+  iniciarEdicao(usuario: UsuarioResponse): void {
+    this.editandoId.set(usuario.id);
+    this.nome = usuario.nome;
+    this.email = usuario.email;
+    this.senha = '';
+    this.cpf = '';
+    this.telefone = usuario.telefone ?? '';
+    this.perfil = usuario.perfil;
+    this.erro.set(null);
+  }
+
+  cancelarEdicao(): void {
+    this.editandoId.set(null);
+    this.nome = '';
+    this.email = '';
+    this.senha = '';
+    this.cpf = '';
+    this.telefone = '';
+    this.perfil = '';
+  }
+
   salvar(): void {
-    if (!this.nome.trim() || !this.email.trim() || !this.senha.trim() || !this.cpf.trim() || !this.perfil) {
+    const idAtual = this.editandoId();
+    const editando = idAtual !== null;
+
+    if (!this.nome.trim() || !this.email.trim() || !this.perfil) {
+      return;
+    }
+
+    if (!editando && (!this.senha.trim() || !this.cpf.trim())) {
       return;
     }
 
     this.erro.set(null);
-    this.usuarioService.criar({
+    const payload = {
       nome: this.nome.trim(),
       email: this.email.trim(),
       senha: this.senha,
       cpf: this.cpf.trim(),
       telefone: this.telefone.trim() || null,
       perfil: this.perfil
-    }).subscribe({
+    };
+
+    if (editando) {
+      this.usuarioService.atualizar(idAtual, payload).subscribe({
+        next: () => {
+          this.cancelarEdicao();
+          this.carregarUsuarios();
+        },
+        error: (err) => {
+          this.erro.set(err?.error?.message || 'Erro ao atualizar usuário.');
+        }
+      });
+      return;
+    }
+
+    this.usuarioService.criar(payload).subscribe({
       next: () => {
-        this.nome = '';
-        this.email = '';
-        this.senha = '';
-        this.cpf = '';
-        this.telefone = '';
-        this.perfil = '';
+        this.cancelarEdicao();
         this.carregarUsuarios();
       },
-      error: () => {
-        this.erro.set('Erro ao cadastrar usuário. Verifique os dados (ex.: e-mail, CPF ou perfil).');
+      error: (err) => {
+        this.erro.set(err?.error?.message || 'Erro ao cadastrar usuário. Verifique os dados (ex.: e-mail, CPF ou perfil).');
+      }
+    });
+  }
+
+  excluir(id: number): void {
+    if (!confirm('Deseja realmente excluir este usuário?')) return;
+
+    this.erro.set(null);
+    this.usuarioService.deletar(id).subscribe({
+      next: () => {
+        if (this.editandoId() === id) {
+          this.cancelarEdicao();
+        }
+        this.carregarUsuarios();
+      },
+      error: (err) => {
+        this.erro.set(err?.error?.message || 'Erro ao excluir usuário.');
       }
     });
   }

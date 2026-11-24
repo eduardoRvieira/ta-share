@@ -22,6 +22,7 @@ export class Emprestimos implements OnInit {
   protected readonly equipamentos = signal<EquipamentoResponse[]>([]);
   protected readonly carregando = signal(false);
   protected readonly erro = signal<string | null>(null);
+  protected readonly editandoId = signal<number | null>(null);
 
   usuarioId: number | '' = '';
   equipamentoId: number | '' = '';
@@ -63,13 +64,34 @@ export class Emprestimos implements OnInit {
     });
   }
 
+  iniciarEdicao(emprestimo: EmprestimoResponse): void {
+    this.editandoId.set(emprestimo.id);
+    this.usuarioId = emprestimo.usuarioId;
+    this.equipamentoId = emprestimo.equipamentoId;
+    this.dataEmprestimo = emprestimo.dataEmprestimo ?? '';
+    this.dataDevolucaoPrevista = emprestimo.dataDevolucaoPrevista;
+    this.status = emprestimo.status;
+    this.observacoes = emprestimo.observacoes ?? '';
+    this.erro.set(null);
+  }
+
+  cancelarEdicao(): void {
+    this.editandoId.set(null);
+    this.usuarioId = '';
+    this.equipamentoId = '';
+    this.dataEmprestimo = '';
+    this.dataDevolucaoPrevista = '';
+    this.status = 'ATIVO';
+    this.observacoes = '';
+  }
+
   salvar(): void {
     if (!this.usuarioId || !this.equipamentoId || !this.dataDevolucaoPrevista || !this.status) {
       return;
     }
 
     this.erro.set(null);
-    this.emprestimoService.criar({
+    const payload = {
       usuarioId: Number(this.usuarioId),
       equipamentoId: Number(this.equipamentoId),
       dataEmprestimo: this.dataEmprestimo || null,
@@ -77,19 +99,75 @@ export class Emprestimos implements OnInit {
       dataDevolucaoReal: null,
       status: this.status,
       observacoes: this.observacoes.trim() || null
-    }).subscribe({
+    };
+
+    const idAtual = this.editandoId();
+
+    if (idAtual !== null) {
+      this.emprestimoService.atualizar(idAtual, payload).subscribe({
+        next: () => {
+          this.cancelarEdicao();
+          this.carregarEmprestimos();
+          this.carregarOpcoes();
+        },
+        error: (err) => {
+          this.erro.set(err?.error?.message || 'Erro ao atualizar empréstimo.');
+        }
+      });
+      return;
+    }
+
+    this.emprestimoService.criar(payload).subscribe({
       next: () => {
-        this.usuarioId = '';
-        this.equipamentoId = '';
-        this.dataEmprestimo = '';
-        this.dataDevolucaoPrevista = '';
-        this.status = 'ATIVO';
-        this.observacoes = '';
+        this.cancelarEdicao();
         this.carregarEmprestimos();
         this.carregarOpcoes();
       },
       error: (err) => {
         this.erro.set(err?.error?.message || 'Erro ao registrar empréstimo.');
+      }
+    });
+  }
+
+  devolver(emprestimo: EmprestimoResponse): void {
+    this.erro.set(null);
+
+    this.emprestimoService.atualizar(emprestimo.id, {
+      usuarioId: emprestimo.usuarioId,
+      equipamentoId: emprestimo.equipamentoId,
+      dataEmprestimo: emprestimo.dataEmprestimo,
+      dataDevolucaoPrevista: emprestimo.dataDevolucaoPrevista,
+      dataDevolucaoReal: emprestimo.dataDevolucaoReal,
+      status: 'DEVOLVIDO',
+      observacoes: emprestimo.observacoes
+    }).subscribe({
+      next: () => {
+        if (this.editandoId() === emprestimo.id) {
+          this.cancelarEdicao();
+        }
+        this.carregarEmprestimos();
+        this.carregarOpcoes();
+      },
+      error: (err) => {
+        this.erro.set(err?.error?.message || 'Erro ao registrar devolução do empréstimo.');
+      }
+    });
+  }
+
+  excluir(id: number): void {
+    if (!confirm('Deseja realmente excluir este empréstimo?')) return;
+
+    this.erro.set(null);
+    this.emprestimoService.deletar(id).subscribe({
+      next: () => {
+        if (this.editandoId() === id) {
+          this.cancelarEdicao();
+        }
+        this.carregarEmprestimos();
+        this.carregarOpcoes();
+      },
+      error: (err) => {
+        this.erro.set(err?.error?.message || 'Erro ao excluir empréstimo.');
       }
     });
   }

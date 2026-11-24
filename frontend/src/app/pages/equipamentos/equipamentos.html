@@ -3,7 +3,9 @@
   <p>Listagem e gestão de equipamentos de tecnologia assistiva.</p>
 
   <section aria-labelledby="titulo-form-equipamento">
-    <h3 id="titulo-form-equipamento">Novo equipamento</h3>
+    <h3 id="titulo-form-equipamento">
+      {{ editandoId() !== null ? 'Editar equipamento' : 'Novo equipamento' }}
+    </h3>
     <form (ngSubmit)="salvar()">
       <div>
         <label for="nome-equipamento">Nome</label>
@@ -44,7 +46,13 @@
         <textarea id="descricao-equipamento" name="descricao" [(ngModel)]="descricao"></textarea>
       </div>
 
-      <button type="submit">Cadastrar equipamento</button>
+      <button type="submit">
+        {{ editandoId() !== null ? 'Salvar alterações' : 'Cadastrar equipamento' }}
+      </button>
+
+      @if (editandoId() !== null) {
+      <button type="button" (click)="cancelarEdicao()">Cancelar edição</button>
+      }
     </form>
   </section>
 
@@ -69,6 +77,10 @@
         @if (equipamento.descricao) {
         <p>{{ equipamento.descricao }}</p>
         }
+        <div>
+          <button type="button" (click)="iniciarEdicao(equipamento)">Editar</button>
+          <button type="button" (click)="excluir(equipamento.id)">Excluir</button>
+        </div>
       </li>
       }
     </ul>

@@ -18,6 +18,7 @@ export class Equipamentos implements OnInit {
   protected readonly categorias = signal<CategoriaResponse[]>([]);
   protected readonly carregando = signal(false);
   protected readonly erro = signal<string | null>(null);
+  protected readonly editandoId = signal<number | null>(null);
 
   nome = '';
   patrimonio = '';
@@ -54,31 +55,81 @@ export class Equipamentos implements OnInit {
     });
   }
 
+  iniciarEdicao(equipamento: EquipamentoResponse): void {
+    this.editandoId.set(equipamento.id);
+    this.nome = equipamento.nome;
+    this.patrimonio = equipamento.patrimonio;
+    this.categoriaId = equipamento.categoriaId;
+    this.estadoConservacao = equipamento.estadoConservacao;
+    this.statusItem = equipamento.statusItem;
+    this.descricao = equipamento.descricao ?? '';
+    this.erro.set(null);
+  }
+
+  cancelarEdicao(): void {
+    this.editandoId.set(null);
+    this.nome = '';
+    this.patrimonio = '';
+    this.categoriaId = '';
+    this.estadoConservacao = '';
+    this.statusItem = 'DISPONIVEL';
+    this.descricao = '';
+  }
+
   salvar(): void {
     if (!this.nome.trim() || !this.patrimonio.trim() || !this.categoriaId || !this.estadoConservacao.trim()) {
       return;
     }
 
     this.erro.set(null);
-    this.equipamentoService.criar({
+    const payload = {
       nome: this.nome.trim(),
       patrimonio: this.patrimonio.trim(),
       categoriaId: Number(this.categoriaId),
       estadoConservacao: this.estadoConservacao.trim(),
       statusItem: this.statusItem,
       descricao: this.descricao.trim() || null
-    }).subscribe({
+    };
+
+    const idAtual = this.editandoId();
+
+    if (idAtual !== null) {
+      this.equipamentoService.atualizar(idAtual, payload).subscribe({
+        next: () => {
+          this.cancelarEdicao();
+          this.carregarEquipamentos();
+        },
+        error: (err) => {
+          this.erro.set(err?.error?.message || 'Erro ao atualizar equipamento.');
+        }
+      });
+      return;
+    }
+
+    this.equipamentoService.criar(payload).subscribe({
       next: () => {
-        this.nome = '';
-        this.patrimonio = '';
-        this.categoriaId = '';
-        this.estadoConservacao = '';
-        this.statusItem = 'DISPONIVEL';
-        this.descricao = '';
+        this.cancelarEdicao();
         this.carregarEquipamentos();
       },
-      error: () => {
-        this.erro.set('Erro ao cadastrar equipamento.');
+      error: (err) => {
+        this.erro.set(err?.error?.message || 'Erro ao cadastrar equipamento.');
+      }
+    });
+  }
+
+  excluir(id: number): void {
+    if (!confirm('Deseja realmente excluir este equipamento?')) return;
+
+    this.erro.set(null);
+    this.equipamentoService.deletar(id).subscribe({
+      next: () => {
+        if (this.editandoId() === id) {
+          this.cancelarEdicao();
+        }
+        this.carregarEquipamentos();
+      },
+      error: (err) => {
+        this.erro.set(err?.error?.message || 'Erro ao excluir equipamento.');
       }
     });
   }

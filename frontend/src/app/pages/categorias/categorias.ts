@@ -14,6 +14,7 @@ export class Categorias implements OnInit {
   protected readonly categorias = signal<CategoriaResponse[]>([]);
   protected readonly carregando = signal(false);
   protected readonly erro = signal<string | null>(null);
+  protected readonly editandoId = signal<number | null>(null);
 
   nome = '';
   descricao = '';
@@ -38,21 +39,68 @@ export class Categorias implements OnInit {
     });
   }
 
+  iniciarEdicao(categoria: CategoriaResponse): void {
+    this.editandoId.set(categoria.id);
+    this.nome = categoria.nome;
+    this.descricao = categoria.descricao ?? '';
+    this.erro.set(null);
+  }
+
+  cancelarEdicao(): void {
+    this.editandoId.set(null);
+    this.nome = '';
+    this.descricao = '';
+  }
+
   salvar(): void {
     if (!this.nome.trim()) return;
 
     this.erro.set(null);
-    this.categoriaService.criar({
+    const payload = {
       nome: this.nome.trim(),
       descricao: this.descricao.trim() || null
-    }).subscribe({
+    };
+
+    const idAtual = this.editandoId();
+
+    if (idAtual !== null) {
+      this.categoriaService.atualizar(idAtual, payload).subscribe({
+        next: () => {
+          this.cancelarEdicao();
+          this.carregarCategorias();
+        },
+        error: (err) => {
+          this.erro.set(err?.error?.message || 'Erro ao atualizar categoria.');
+        }
+      });
+      return;
+    }
+
+    this.categoriaService.criar(payload).subscribe({
       next: () => {
         this.nome = '';
         this.descricao = '';
         this.carregarCategorias();
       },
-      error: () => {
-        this.erro.set('Erro ao cadastrar categoria.');
+      error: (err) => {
+        this.erro.set(err?.error?.message || 'Erro ao cadastrar categoria.');
+      }
+    });
+  }
+
+  excluir(id: number): void {
+    if (!confirm('Deseja realmente excluir esta categoria?')) return;
+
+    this.erro.set(null);
+    this.categoriaService.deletar(id).subscribe({
+      next: () => {
+        if (this.editandoId() === id) {
+          this.cancelarEdicao();
+        }
+        this.carregarCategorias();
+      },
+      error: (err) => {
+        this.erro.set(err?.error?.message || 'Erro ao excluir categoria.');
       }
     });
   }

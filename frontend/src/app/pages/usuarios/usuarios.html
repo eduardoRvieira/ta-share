@@ -3,7 +3,9 @@
   <p>Cadastro e consulta de usuários do sistema.</p>
 
   <section aria-labelledby="titulo-form-usuario">
-    <h3 id="titulo-form-usuario">Novo usuário</h3>
+    <h3 id="titulo-form-usuario">
+      {{ editandoId() !== null ? 'Editar usuário' : 'Novo usuário' }}
+    </h3>
     <form (ngSubmit)="salvar()">
       <div>
         <label for="nome-usuario">Nome</label>
@@ -17,12 +19,12 @@
 
       <div>
         <label for="senha-usuario">Senha</label>
-        <input id="senha-usuario" name="senha" type="password" [(ngModel)]="senha" required>
+        <input id="senha-usuario" name="senha" type="password" [(ngModel)]="senha" [required]="editandoId() === null">
       </div>
 
       <div>
         <label for="cpf-usuario">CPF</label>
-        <input id="cpf-usuario" name="cpf" type="text" [(ngModel)]="cpf" required>
+        <input id="cpf-usuario" name="cpf" type="text" [(ngModel)]="cpf" [required]="editandoId() === null">
       </div>
 
       <div>
@@ -39,7 +41,13 @@
         </select>
       </div>
 
-      <button type="submit">Cadastrar usuário</button>
+      <button type="submit">
+        {{ editandoId() !== null ? 'Salvar alterações' : 'Cadastrar usuário' }}
+      </button>
+
+      @if (editandoId() !== null) {
+      <button type="button" (click)="cancelarEdicao()">Cancelar edição</button>
+      }
     </form>
   </section>
 
@@ -62,6 +70,10 @@
         @if (usuario.telefone) {
         <span> — Telefone: {{ usuario.telefone }}</span>
         }
+        <div>
+          <button type="button" (click)="iniciarEdicao(usuario)">Editar</button>
+          <button type="button" (click)="excluir(usuario.id)">Excluir</button>
+        </div>
       </li>
       }
     </ul>

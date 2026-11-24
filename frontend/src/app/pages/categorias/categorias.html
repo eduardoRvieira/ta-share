@@ -3,7 +3,9 @@
   <p>Organização das categorias de recursos assistivos.</p>
 
   <section aria-labelledby="titulo-form-categoria">
-    <h3 id="titulo-form-categoria">Nova categoria</h3>
+    <h3 id="titulo-form-categoria">
+      {{ editandoId() !== null ? 'Editar categoria' : 'Nova categoria' }}
+    </h3>
     <form (ngSubmit)="salvar()">
       <div>
         <label for="nome-categoria">Nome</label>
@@ -15,7 +17,13 @@
         <input id="descricao-categoria" name="descricao" type="text" [(ngModel)]="descricao">
       </div>
 
-      <button type="submit">Cadastrar categoria</button>
+      <button type="submit">
+        {{ editandoId() !== null ? 'Salvar alterações' : 'Cadastrar categoria' }}
+      </button>
+
+      @if (editandoId() !== null) {
+      <button type="button" (click)="cancelarEdicao()">Cancelar edição</button>
+      }
     </form>
   </section>
 
@@ -36,6 +44,10 @@
         @if (categoria.descricao) {
         <span> — {{ categoria.descricao }}</span>
         }
+        <div>
+          <button type="button" (click)="iniciarEdicao(categoria)">Editar</button>
+          <button type="button" (click)="excluir(categoria.id)">Excluir</button>
+        </div>
       </li>
       }
     </ul>

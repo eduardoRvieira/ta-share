@@ -3,7 +3,9 @@
   <p>Controle de empréstimos e devoluções de equipamentos.</p>
 
   <section aria-labelledby="titulo-form-emprestimo">
-    <h3 id="titulo-form-emprestimo">Registrar empréstimo</h3>
+    <h3 id="titulo-form-emprestimo">
+      {{ editandoId() !== null ? 'Editar empréstimo' : 'Registrar empréstimo' }}
+    </h3>
     <form (ngSubmit)="salvar()">
       <div>
         <label for="usuario-emprestimo">Usuário</label>
@@ -51,7 +53,13 @@
         <textarea id="observacoes-emprestimo" name="observacoes" [(ngModel)]="observacoes"></textarea>
       </div>
 
-      <button type="submit">Registrar empréstimo</button>
+      <button type="submit">
+        {{ editandoId() !== null ? 'Salvar alterações' : 'Registrar empréstimo' }}
+      </button>
+
+      @if (editandoId() !== null) {
+      <button type="button" (click)="cancelarEdicao()">Cancelar edição</button>
+      }
     </form>
   </section>
 
@@ -81,6 +89,13 @@
         @if (emprestimo.observacoes) {
         <p>{{ emprestimo.observacoes }}</p>
         }
+        <div>
+          @if (emprestimo.status !== 'DEVOLVIDO') {
+          <button type="button" (click)="devolver(emprestimo)">Devolver</button>
+          }
+          <button type="button" (click)="iniciarEdicao(emprestimo)">Editar</button>
+          <button type="button" (click)="excluir(emprestimo.id)">Excluir</button>
+        </div>
       </li>
       }
     </ul>
