@@ -2,6 +2,10 @@
   <h2 id="titulo-login">Entrar</h2>
   <p>Acesse sua conta no TA.share.</p>
 
+  @if (erro()) {
+  <p role="alert">{{ erro() }}</p>
+  }
+
   <form (ngSubmit)="entrar()">
     <div>
       <label for="email">E-mail</label>
@@ -13,6 +17,8 @@
       <input id="senha" name="senha" type="password" [(ngModel)]="senha" required>
     </div>
 
-    <button type="submit">Entrar</button>
+    <button type="submit" [disabled]="enviando()">
+      {{ enviando() ? 'Entrando...' : 'Entrar' }}
+    </button>
   </form>
 </section>
