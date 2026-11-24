@@ -1,0 +1,88 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px 24px;
+}
+
+header h1 {
+  margin-bottom: 4px;
+  font-size: 1.6rem;
+}
+
+header > p {
+  margin-bottom: 12px;
+  color: var(--text-muted);
+}
+
+section[aria-label="Recursos de acessibilidade em áudio"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+nav[aria-label="Navegação principal"] ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+nav[aria-label="Navegação principal"] li {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+nav[aria-label="Navegação principal"] a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 6px 12px;
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--text-main);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+}
+
+nav[aria-label="Navegação principal"] a:hover,
+nav[aria-label="Navegação principal"] a.ativo {
+  color: #ffffff;
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+hr {
+  display: none;
+}
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 920px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+footer {
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  padding: 14px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+footer p {
+  margin: 0;
+}

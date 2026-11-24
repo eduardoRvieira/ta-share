@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -8,7 +8,20 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   styleUrl: './app.css'
 })
 export class App {
+  private readonly router = inject(Router);
   protected readonly title = signal('TA.share');
+
+  estaLogado(): boolean {
+    return !!localStorage.getItem('ta_share_usuario');
+  }
+
+  sair(): void {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    localStorage.removeItem('ta_share_usuario');
+    this.router.navigate(['/login']);
+  }
 
   lerPagina(): void {
     if (!('speechSynthesis' in window)) {
