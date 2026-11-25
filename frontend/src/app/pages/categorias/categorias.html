@@ -100,4 +100,64 @@
     }
   </section>
 
+  <!-- MODAL DE CADASTRO / EDIÇÃO DE CATEGORIA -->
+  @if (modalAberto()) {
+    <div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+      <section aria-labelledby="titulo-form-categoria"
+        class="bg-surface border border-app rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
+        
+        <!-- Cabeçalho do Modal -->
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 id="titulo-form-categoria" class="text-lg font-bold text-main leading-tight">
+              {{ editandoId() !== null ? 'Editar categoria' : 'Nova categoria' }}
+            </h3>
+            <p class="text-xs text-muted mt-1 leading-relaxed">
+              Ex.: Mobilidade, Baixa visão, Comunicação alternativa. Campos marcados com <span class="text-rose-500 font-bold">*</span> são obrigatórios.
+            </p>
+          </div>
+          <button type="button" (click)="cancelarEdicao()" aria-label="Fechar janela"
+            class="p-1.5 rounded-lg text-muted hover:text-main transition-colors cursor-pointer shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form #formCategoria="ngForm" (ngSubmit)="salvar()" class="space-y-4">
+          <div>
+            <label for="nome-categoria" class="block text-xs font-bold text-main mb-1.5">
+              Nome <span class="text-rose-500">*</span>
+            </label>
+            <input id="nome-categoria" name="nome" type="text" [(ngModel)]="nome" required
+              placeholder="Ex.: Mobilidade"
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+          </div>
+
+          <div>
+            <label for="descricao-categoria" class="block text-xs font-bold text-main mb-1.5">
+              Descrição
+            </label>
+            <textarea id="descricao-categoria" name="descricao" [(ngModel)]="descricao" rows="3"
+              placeholder="Descreva os tipos de equipamentos desta categoria..."
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors"></textarea>
+          </div>
+
+          <!-- Botões de ação -->
+          <div class="flex items-center justify-end gap-2.5 pt-2">
+            <button type="button" (click)="cancelarEdicao()"
+              class="px-4 py-2 rounded-lg border border-app bg-app text-xs font-bold text-main hover:opacity-80 transition-opacity cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="formCategoria.invalid"
+              class="btn-primary px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all cursor-pointer">
+              Salvar
+            </button>
+          </div>
+        </form>
+
+      </section>
+    </div>
+  }
+
 </section>
