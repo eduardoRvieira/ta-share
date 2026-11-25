@@ -10,13 +10,24 @@ header {
   padding: 16px 24px;
 }
 
-header h1 {
-  margin-bottom: 4px;
-  font-size: 1.6rem;
+.marca {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
 }
 
-header > p {
-  margin-bottom: 12px;
+.logo-marca {
+  height: 120px;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+  align-self: flex-start;
+}
+
+header > p,
+.marca p {
+  margin-bottom: 0;
   color: var(--text-muted);
 }
 
@@ -78,9 +89,21 @@ footer {
   background-color: var(--bg-surface);
   border-top: 1px solid var(--border-color);
   padding: 14px 24px;
-  text-align: center;
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+
+.rodape-marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.icone-rodape {
+  height: 22px;
+  width: 22px;
+  object-fit: contain;
 }
 
 footer p {

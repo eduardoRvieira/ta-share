@@ -1,6 +1,9 @@
 <header>
-  <h1>{{ title() }}</h1>
-  <p>Sistema de Compartilhamento de Tecnologia Assistiva</p>
+  <div class="marca">
+    <h1 class="sr-only">{{ title() }}</h1>
+    <img src="/logo-tashare.png" alt="TA.share" class="logo-marca">
+    <p>Sistema de Compartilhamento de Tecnologia Assistiva</p>
+  </div>
 
   <section aria-label="Recursos de acessibilidade em áudio">
     <button type="button" (click)="lerPagina()">Ouvir conteúdo da tela</button>
@@ -29,5 +32,8 @@
 <hr>
 
 <footer>
-  <p>TA.share — Projeto Integrador</p>
+  <div class="rodape-marca">
+    <img src="/favicon-tashare.png" alt="" aria-hidden="true" class="icone-rodape">
+    <p>TA.share — Projeto Integrador</p>
+  </div>
 </footer>
