@@ -1,73 +1,193 @@
-<section aria-labelledby="titulo-login">
-  <h2 id="titulo-login">{{ modoCadastro() ? 'Criar conta' : 'Entrar' }}</h2>
-  <p>
-    {{ modoCadastro()
-    ? 'Cadastre-se para acessar o TA.share.'
-    : 'Acesse sua conta no TA.share.' }}
-  </p>
+<div class="flex-1 bg-app text-main flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8">
+  <div class="w-full max-w-md mx-auto space-y-6">
 
-  @if (aviso()) {
-  <p role="status">{{ aviso() }}</p>
-  }
-
-  @if (erro()) {
-  <p role="alert">{{ erro() }}</p>
-  }
-
-  @if (!modoCadastro()) {
-  <form (ngSubmit)="entrar()">
-    <div>
-      <label for="email">E-mail</label>
-      <input id="email" name="email" type="email" [(ngModel)]="email" required>
+    <!-- Identidade Visual (Favicon Oficial no lugar do coração) -->
+    <div class="flex items-center gap-3.5">
+      <div class="logo-badge w-12 h-12 rounded-xl flex items-center justify-center shadow-sm shrink-0 p-2">
+        <img src="/favicon-tashare.png" alt="Logo TA Share" class="w-full h-full object-contain">
+      </div>
+      <div>
+        <h2 class="text-xl font-bold tracking-tight text-main leading-tight">TA Share</h2>
+        <p class="text-xs text-muted">Tecnologia Assistiva Share</p>
+      </div>
     </div>
 
-    <div>
-      <label for="senha">Senha</label>
-      <input id="senha" name="senha" type="password" [(ngModel)]="senha" required>
-    </div>
+    <!-- Cabeçalho da Seção -->
+    <section aria-labelledby="titulo-login" class="space-y-6">
+      <div class="space-y-2">
+        <h3 id="titulo-login" class="text-2xl sm:text-3xl font-bold tracking-tight text-main">
+          {{ modoCadastro() ? 'Criar conta' : 'Entrar no sistema' }}
+        </h3>
+        <p class="text-sm text-muted leading-relaxed">
+          {{ modoCadastro()
+            ? 'O cadastro é gratuito. Preencha os dados abaixo para começar.'
+            : 'Serviço gratuito de empréstimo de equipamentos de tecnologia assistiva.' }}
+        </p>
+        <p class="text-xs text-muted pt-1">
+          Todos os campos marcados com <span class="text-rose-500 font-bold">*</span> são obrigatórios.
+        </p>
+      </div>
 
-    <button type="submit" [disabled]="enviando()">
-      {{ enviando() ? 'Entrando...' : 'Entrar' }}
-    </button>
-  </form>
+      <!-- Alertas de Aviso e Erro -->
+      @if (aviso()) {
+        <div role="status" class="p-3.5 rounded-lg bg-emerald-500/15 border border-emerald-500 text-emerald-500 text-sm font-medium">
+          {{ aviso() }}
+        </div>
+      }
 
-  <div>
-    <button type="button" (click)="alternarModo()">Criar uma conta</button>
+      @if (erro()) {
+        <div role="alert" class="p-3.5 rounded-lg bg-rose-500/15 border border-rose-500 text-rose-500 text-sm font-medium">
+          {{ erro() }}
+        </div>
+      }
+
+      <!-- FORMULÁRIO DE LOGIN -->
+      @if (!modoCadastro()) {
+        <form (ngSubmit)="entrar()" class="space-y-4">
+          <div>
+            <label for="email" class="block text-xs font-bold text-main mb-1.5">
+              E-mail <span class="text-rose-500">*</span>
+            </label>
+            <input id="email" name="email" type="email" [(ngModel)]="email" required placeholder="admin@tashare.org"
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+          </div>
+
+          <div>
+            <label for="senha" class="block text-xs font-bold text-main mb-1.5">
+              Senha <span class="text-rose-500">*</span>
+            </label>
+            <input id="senha" name="senha" type="password" [(ngModel)]="senha" required placeholder="••••••"
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" [disabled]="enviando()"
+              class="btn-primary w-full flex items-center justify-center gap-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm font-bold transition-colors shadow-sm cursor-pointer">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              </svg>
+              {{ enviando() ? 'Entrando...' : 'Entrar' }}
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center pt-1">
+          <p class="text-xs text-muted">
+            Ainda não tem conta?
+            <button type="button" (click)="alternarModo()" class="link-app underline font-bold ml-1 cursor-pointer">
+              Criar conta
+            </button>
+          </p>
+        </div>
+
+      } @else {
+
+        <!-- FORMULÁRIO DE CADASTRO -->
+        <form (ngSubmit)="cadastrar()" class="space-y-4">
+          
+          <div>
+            <span class="block text-xs font-bold text-main mb-1.5">
+              Tipo de pessoa <span class="text-rose-500">*</span>
+            </span>
+            <div class="grid grid-cols-2 gap-3">
+              <label [class]="tipoPessoa === 'PF'
+                ? 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-bold ring-2 ring-current'
+                : 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
+                <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="cpf = ''" class="w-3.5 h-3.5">
+                Pessoa física
+              </label>
+              <label [class]="tipoPessoa === 'PJ'
+                ? 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-bold ring-2 ring-current'
+                : 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
+                <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="cpf = ''" class="w-3.5 h-3.5">
+                Pessoa jurídica
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label for="nome-cadastro" class="block text-xs font-bold text-main mb-1.5">
+              {{ tipoPessoa === 'PF' ? 'Nome completo' : 'Razão social / Nome da instituição' }} <span class="text-rose-500">*</span>
+            </label>
+            <input id="nome-cadastro" name="nome" type="text" [(ngModel)]="nome" required
+              [placeholder]="tipoPessoa === 'PF' ? 'Mariana Costa Souza' : 'Instituto Vida Plena'"
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label for="cpf-cadastro" class="block text-xs font-bold text-main mb-1.5">
+                {{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }} <span class="text-rose-500">*</span>
+              </label>
+              <input id="cpf-cadastro" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="formatarDocumento($event)" required
+                [placeholder]="tipoPessoa === 'PF' ? '123.456.789-89' : '12.345.678/0001-90'"
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+              <p class="text-[11px] text-muted mt-1">Só números; a pontuação é automática.</p>
+            </div>
+
+            <div>
+              <label for="telefone-cadastro" class="block text-xs font-bold text-main mb-1.5">
+                Telefone
+              </label>
+              <input id="telefone-cadastro" name="telefone" type="tel" [(ngModel)]="telefone" (ngModelChange)="formatarTelefone($event)"
+                placeholder="(11) 98765-4321"
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+              <p class="text-[11px] text-muted mt-1">Com DDD.</p>
+            </div>
+          </div>
+
+          <div>
+            <label for="email-cadastro" class="block text-xs font-bold text-main mb-1.5">
+              E-mail <span class="text-rose-500">*</span>
+            </label>
+            <input id="email-cadastro" name="email" type="email" [(ngModel)]="email" required placeholder="mariana.souza@email.com"
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label for="perfil-cadastro" class="block text-xs font-bold text-main mb-1.5">
+                Perfil <span class="text-rose-500">*</span>
+              </label>
+              <select id="perfil-cadastro" name="perfil" [(ngModel)]="perfil"
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+                <option value="BENEFICIARIO">Beneficiário</option>
+                <option value="PROFISSIONAL">Profissional</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="senha-cadastro" class="block text-xs font-bold text-main mb-1.5">
+                Senha <span class="text-rose-500">*</span>
+              </label>
+              <input id="senha-cadastro" name="senha" type="password" [(ngModel)]="senha" required minlength="6" placeholder="••••••••"
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+              <p class="text-[11px] text-muted mt-1">Mínimo de 6 caracteres.</p>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" [disabled]="enviando()"
+              class="btn-primary w-full flex items-center justify-center gap-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-sm font-bold transition-colors shadow-sm cursor-pointer">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              {{ enviando() ? 'Cadastrando...' : 'Criar conta' }}
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center pt-1">
+          <p class="text-xs text-muted">
+            Já tenho conta?
+            <button type="button" (click)="alternarModo()" class="link-app underline font-bold ml-1 cursor-pointer">
+              Entrar
+            </button>
+          </p>
+        </div>
+      }
+    </section>
+
   </div>
-  } @else {
-  <form (ngSubmit)="cadastrar()">
-    <div>
-      <label for="nome-cadastro">Nome</label>
-      <input id="nome-cadastro" name="nome" type="text" [(ngModel)]="nome" required>
-    </div>
-
-    <div>
-      <label for="email-cadastro">E-mail</label>
-      <input id="email-cadastro" name="email" type="email" [(ngModel)]="email" required>
-    </div>
-
-    <div>
-      <label for="cpf-cadastro">CPF</label>
-      <input id="cpf-cadastro" name="cpf" type="text" [(ngModel)]="cpf" required>
-    </div>
-
-    <div>
-      <label for="telefone-cadastro">Telefone</label>
-      <input id="telefone-cadastro" name="telefone" type="tel" [(ngModel)]="telefone">
-    </div>
-
-    <div>
-      <label for="senha-cadastro">Senha</label>
-      <input id="senha-cadastro" name="senha" type="password" [(ngModel)]="senha" required>
-    </div>
-
-    <button type="submit" [disabled]="enviando()">
-      {{ enviando() ? 'Cadastrando...' : 'Cadastrar' }}
-    </button>
-  </form>
-
-  <div>
-    <button type="button" (click)="alternarModo()">Já tenho conta (Entrar)</button>
-  </div>
-  }
-</section>
+</div>
