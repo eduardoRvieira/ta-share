@@ -155,3 +155,10 @@ body.tema-escuro-contraste .nav-ativo {
   color: var(--accent-text);
   font-weight: 700;
 }
+
+/* Forms */
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
