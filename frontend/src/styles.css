@@ -1,19 +1,81 @@
 @import "tailwindcss";
 
-:root {
-  --bg-page: #f6f8f7;
-  --bg-surface: #ffffff;
-  --bg-subtle: #edf3f0;
-  --text-main: #111827;
-  --text-muted: #4b5563;
-  --border-color: #cbd5e1;
-  --primary: #0f6b53;
-  --primary-hover: #0b5340;
-  --primary-soft: #e6f4ef;
-  --danger: #b42318;
-  --danger-bg: #fef3f2;
-  --focus-ring: #13294b;
-  --radius: 8px;
+/* Temas */
+:root,
+body.tema-escuro {
+  --bg-app: #0B101B;
+  --bg-surface: #0E1525;
+  --bg-input: #111827;
+  --border-color: rgba(51, 65, 85, 0.8);
+  --border-width: 1px;
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --accent-bg: #6EA8FE;
+  --accent-hover: #60A5FA;
+  --accent-text: #020617;
+  --link-color: #6EA8FE;
+  --logo-bg: linear-gradient(135deg, #2563EB, #10B981);
+  --logo-icon: #020617;
+  --hc-btn-bg: rgba(15, 23, 42, 0.6);
+  --hc-btn-text: #E2E8F0;
+  --hc-btn-border: #334155;
+}
+
+body.tema-claro {
+  --bg-app: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --border-color: #CBD5E1;
+  --border-width: 1px;
+  --text-main: #0F172A;
+  --text-muted: #475569;
+  --accent-bg: #0B4F9F;
+  --accent-hover: #083D7C;
+  --accent-text: #FFFFFF;
+  --link-color: #0B4F9F;
+  --logo-bg: linear-gradient(135deg, #0B4F9F, #059669);
+  --logo-icon: #FFFFFF;
+  --hc-btn-bg: #FFFFFF;
+  --hc-btn-text: #0F172A;
+  --hc-btn-border: #CBD5E1;
+}
+
+body.tema-claro-contraste {
+  --bg-app: #FFFFFF;
+  --bg-surface: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --border-color: #000000;
+  --border-width: 1.5px;
+  --text-main: #000000;
+  --text-muted: #1E293B;
+  --accent-bg: #003399;
+  --accent-hover: #002266;
+  --accent-text: #FFFFFF;
+  --link-color: #003399;
+  --logo-bg: #003399;
+  --logo-icon: #FFFFFF;
+  --hc-btn-bg: #003399;
+  --hc-btn-text: #FFFFFF;
+  --hc-btn-border: #003399;
+}
+
+body.tema-escuro-contraste {
+  --bg-app: #000000;
+  --bg-surface: #000000;
+  --bg-input: #000000;
+  --border-color: #FFFFFF;
+  --border-width: 1.5px;
+  --text-main: #FFFFFF;
+  --text-muted: #E2E8F0;
+  --accent-bg: #FDE047;
+  --accent-hover: #FACC15;
+  --accent-text: #000000;
+  --link-color: #FDE047;
+  --logo-bg: #FDE047;
+  --logo-icon: #000000;
+  --hc-btn-bg: #FDE047;
+  --hc-btn-text: #000000;
+  --hc-btn-border: #FDE047;
 }
 
 *,
