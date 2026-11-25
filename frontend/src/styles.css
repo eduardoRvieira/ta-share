@@ -141,3 +141,17 @@ body.tema-escuro .logo-badge img,
 body.tema-escuro-contraste .logo-badge img {
   filter: brightness(0);
 }
+
+/* Destaque do link ativo na Sidebar */
+.nav-ativo {
+  background-color: rgba(110, 168, 254, 0.14);
+  color: var(--link-color);
+  font-weight: 600;
+}
+
+body.tema-claro-contraste .nav-ativo,
+body.tema-escuro-contraste .nav-ativo {
+  background-color: var(--accent-bg);
+  color: var(--accent-text);
+  font-weight: 700;
+}
