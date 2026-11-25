@@ -1,104 +1,385 @@
 <section aria-labelledby="titulo-emprestimos">
-  <h2 id="titulo-emprestimos">Empréstimos</h2>
-  <p>Controle de empréstimos e devoluções de equipamentos.</p>
 
-  <section aria-labelledby="titulo-form-emprestimo">
-    <h3 id="titulo-form-emprestimo">
-      {{ editandoId() !== null ? 'Editar empréstimo' : 'Registrar empréstimo' }}
-    </h3>
-    <form (ngSubmit)="salvar()">
-      <div>
-        <label for="usuario-emprestimo">Usuário</label>
-        <select id="usuario-emprestimo" name="usuarioId" [(ngModel)]="usuarioId" required>
-          <option value="" disabled>Selecione um usuário</option>
-          @for (usuario of usuarios(); track usuario.id) {
-          <option [value]="usuario.id">{{ usuario.nome }}</option>
+  <!-- Cabeçalho da Página + Botão + Novo empréstimo -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h2 id="titulo-emprestimos" class="text-2xl sm:text-3xl font-bold tracking-tight text-main">
+        Empréstimos
+      </h2>
+      <p class="text-sm text-muted mt-1">
+        Acompanhe quem está com cada equipamento e registre devoluções.
+      </p>
+    </div>
+
+    <button type="button" (click)="abrirNovo()"
+      class="btn-primary inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors cursor-pointer shrink-0">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      <span>Novo empréstimo</span>
+    </button>
+  </div>
+
+  <!-- Barra de Filtros: Pills de situação + Busca -->
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+    
+    <!-- Filtrar por situação -->
+    <div>
+      <span class="block text-xs font-bold text-main mb-2">
+        Filtrar por situação
+      </span>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" (click)="filtroSituacao.set('TODOS')"
+          [class]="filtroSituacao() === 'TODOS'
+            ? 'btn-primary inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer'
+            : 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-app bg-surface text-xs font-semibold text-main hover:opacity-80 transition-opacity cursor-pointer'">
+          @if (filtroSituacao() === 'TODOS') {
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
           }
-        </select>
-      </div>
+          <span>Todos ({{ contadores().todos }})</span>
+        </button>
 
-      <div>
-        <label for="equipamento-emprestimo">Equipamento</label>
-        <select id="equipamento-emprestimo" name="equipamentoId" [(ngModel)]="equipamentoId" required>
-          <option value="" disabled>Selecione um equipamento</option>
-          @for (equipamento of equipamentos(); track equipamento.id) {
-          <option [value]="equipamento.id">
-            {{ equipamento.nome }} ({{ equipamento.patrimonio }} — {{ equipamento.statusItem }})
-          </option>
+        <button type="button" (click)="filtroSituacao.set('ATIVO')"
+          [class]="filtroSituacao() === 'ATIVO'
+            ? 'btn-primary inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer'
+            : 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-app bg-surface text-xs font-semibold text-main hover:opacity-80 transition-opacity cursor-pointer'">
+          @if (filtroSituacao() === 'ATIVO') {
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
           }
-        </select>
+          <span>Ativos ({{ contadores().ativos }})</span>
+        </button>
+
+        <button type="button" (click)="filtroSituacao.set('ATRASADO')"
+          [class]="filtroSituacao() === 'ATRASADO'
+            ? 'btn-primary inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer'
+            : 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-app bg-surface text-xs font-semibold text-main hover:opacity-80 transition-opacity cursor-pointer'">
+          @if (filtroSituacao() === 'ATRASADO') {
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          }
+          <span>Atrasados ({{ contadores().atrasados }})</span>
+        </button>
+
+        <button type="button" (click)="filtroSituacao.set('CONCLUIDO')"
+          [class]="filtroSituacao() === 'CONCLUIDO'
+            ? 'btn-primary inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer'
+            : 'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-app bg-surface text-xs font-semibold text-main hover:opacity-80 transition-opacity cursor-pointer'">
+          @if (filtroSituacao() === 'CONCLUIDO') {
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          }
+          <span>Concluídos ({{ contadores().concluidos }})</span>
+        </button>
       </div>
+    </div>
 
-      <div>
-        <label for="data-emprestimo">Data do empréstimo</label>
-        <input id="data-emprestimo" name="dataEmprestimo" type="date" [(ngModel)]="dataEmprestimo">
+    <!-- Buscar empréstimo -->
+    <div class="w-full lg:w-72">
+      <label for="busca-emprestimo" class="block text-xs font-bold text-main mb-2">
+        Buscar empréstimo
+      </label>
+      <div class="relative">
+        <svg class="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
+        <input id="busca-emprestimo" type="text"
+          [ngModel]="filtroBusca()" (ngModelChange)="filtroBusca.set($event)"
+          placeholder="Nome do usuário ou equipamento"
+          class="input-app w-full rounded-lg pl-10 pr-3.5 py-2 text-sm transition-colors">
       </div>
+    </div>
 
-      <div>
-        <label for="data-devolucao-prevista">Data de devolução prevista</label>
-        <input id="data-devolucao-prevista" name="dataDevolucaoPrevista" type="date" [(ngModel)]="dataDevolucaoPrevista" required>
-      </div>
+  </div>
 
-      <div>
-        <label for="status-emprestimo">Status</label>
-        <select id="status-emprestimo" name="status" [(ngModel)]="status" required>
-          <option value="ATIVO">Ativo</option>
-          <option value="DEVOLVIDO">Devolvido</option>
-          <option value="ATRASADO">Atrasado</option>
-        </select>
-      </div>
+  <!-- Contador de resultados -->
+  <p class="text-xs text-muted">
+    {{ emprestimosFiltrados().length }} empréstimo(s) encontrado(s)
+  </p>
 
-      <div>
-        <label for="observacoes-emprestimo">Observações</label>
-        <textarea id="observacoes-emprestimo" name="observacoes" [(ngModel)]="observacoes"></textarea>
-      </div>
+  <!-- Alerta de Erro -->
+  @if (erro()) {
+    <div role="alert" class="p-3.5 rounded-lg bg-rose-500/15 border border-rose-500 text-rose-500 text-sm font-medium">
+      {{ erro() }}
+    </div>
+  }
 
-      <button type="submit">
-        {{ editandoId() !== null ? 'Salvar alterações' : 'Registrar empréstimo' }}
-      </button>
-
-      @if (editandoId() !== null) {
-      <button type="button" (click)="cancelarEdicao()">Cancelar edição</button>
-      }
-    </form>
-  </section>
-
+  <!-- Tabela / Listagem -->
   <section aria-labelledby="titulo-lista-emprestimos">
-    <h3 id="titulo-lista-emprestimos">Empréstimos registrados</h3>
+    <h3 id="titulo-lista-emprestimos" class="sr-only">Empréstimos registrados</h3>
 
     @if (carregando()) {
-    <p>Carregando empréstimos...</p>
-    } @else if (erro()) {
-    <p role="alert">{{ erro() }}</p>
-    } @else if (emprestimos().length === 0) {
-    <p>Nenhum empréstimo registrado no momento.</p>
+      <div class="bg-surface border border-app rounded-xl p-8 text-center text-sm text-muted">
+        Carregando empréstimos...
+      </div>
+    } @else if (emprestimosFiltrados().length === 0) {
+      <div class="bg-surface border border-app rounded-xl p-8 text-center text-sm text-muted">
+        Nenhum empréstimo encontrado.
+      </div>
     } @else {
-    <ul>
-      @for (emprestimo of emprestimos(); track emprestimo.id) {
-      <li>
-        <strong>{{ emprestimo.equipamentoNome }}</strong>
-        <span> — Usuário: {{ emprestimo.usuarioNome }}</span>
-        <span> — Status: {{ emprestimo.status }}</span>
-        @if (emprestimo.dataEmprestimo) {
-        <span> — Empréstimo: {{ emprestimo.dataEmprestimo }}</span>
-        }
-        <span> — Devolução prevista: {{ emprestimo.dataDevolucaoPrevista }}</span>
-        @if (emprestimo.dataDevolucaoReal) {
-        <span> — Devolvido em: {{ emprestimo.dataDevolucaoReal }}</span>
-        }
-        @if (emprestimo.observacoes) {
-        <p>{{ emprestimo.observacoes }}</p>
-        }
-        <div>
-          @if (emprestimo.status !== 'DEVOLVIDO') {
-          <button type="button" (click)="devolver(emprestimo)">Devolver</button>
-          }
-          <button type="button" (click)="iniciarEdicao(emprestimo)">Editar</button>
-          <button type="button" (click)="excluir(emprestimo.id)">Excluir</button>
+      <div class="bg-surface border border-app rounded-xl overflow-visible">
+        <div class="w-full">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-app text-xs font-semibold text-muted">
+                <th class="py-3.5 px-4">Equipamento</th>
+                <th class="py-3.5 px-4">Usuário</th>
+                <th class="py-3.5 px-4">Empréstimo</th>
+                <th class="py-3.5 px-4">Devolução prevista</th>
+                <th class="py-3.5 px-4">Devolvido em</th>
+                <th class="py-3.5 px-4">Status</th>
+                <th class="py-3.5 px-4 text-right"><span class="sr-only">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/40 text-sm">
+              @for (emprestimo of emprestimosFiltrados(); track emprestimo.id) {
+                <tr class="hover:bg-slate-500/5 transition-colors">
+                  
+                  <!-- Equipamento + Patrimônio -->
+                  <td class="py-3.5 px-4">
+                    <p class="font-bold text-main">{{ emprestimo.equipamentoNome }}</p>
+                    @if (mapaEquipamentos()[emprestimo.equipamentoId]; as eq) {
+                      <p class="text-[11px] font-mono text-muted mt-0.5">{{ eq.patrimonio }}</p>
+                    }
+                  </td>
+
+                  <!-- Usuário + E-mail -->
+                  <td class="py-3.5 px-4">
+                    <p class="font-medium text-main">{{ emprestimo.usuarioNome }}</p>
+                    @if (mapaUsuarios()[emprestimo.usuarioId]; as usr) {
+                      <p class="text-xs text-muted mt-0.5">{{ usr.email }}</p>
+                    }
+                  </td>
+
+                  <!-- Data Empréstimo -->
+                  <td class="py-3.5 px-4 font-mono text-xs text-main whitespace-nowrap">
+                    {{ formatarData(emprestimo.dataEmprestimo) }}
+                  </td>
+
+                  <!-- Devolução Prevista (destacada em vermelho se ATRASADO) -->
+                  <td class="py-3.5 px-4 font-mono text-xs whitespace-nowrap"
+                    [class]="emprestimo.status === 'ATRASADO' ? 'text-rose-500 font-bold' : 'text-main'">
+                    {{ formatarData(emprestimo.dataDevolucaoPrevista) }}
+                  </td>
+
+                  <!-- Devolvido em -->
+                  <td class="py-3.5 px-4 font-mono text-xs text-muted whitespace-nowrap">
+                    {{ formatarData(emprestimo.dataDevolucaoReal) }}
+                  </td>
+
+                  <!-- Badge Status -->
+                  <td class="py-3.5 px-4 whitespace-nowrap">
+                    @if (emprestimo.status === 'ATRASADO') {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Atrasado
+                      </span>
+                    } @else if (emprestimo.status === 'ATIVO') {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        Ativo
+                      </span>
+                    } @else if (isConcluido(emprestimo.status)) {
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Concluído
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-500/15 text-muted">
+                        {{ emprestimo.status }}
+                      </span>
+                    }
+                  </td>
+
+                  <!-- Botão Devolver + Menu 3 pontinhos -->
+                  <td class="py-3.5 px-4 text-right relative whitespace-nowrap">
+                    <div class="inline-flex items-center justify-end gap-2">
+                      @if (!isConcluido(emprestimo.status)) {
+                        <button type="button" (click)="devolver(emprestimo)"
+                          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-app bg-app text-xs font-semibold text-main hover:opacity-80 transition-opacity cursor-pointer">
+                          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                          </svg>
+                          <span>Devolver</span>
+                        </button>
+                      }
+
+                      <button type="button" (click)="alternarMenuLinha(emprestimo.id)"
+                        [attr.aria-label]="'Mais ações para empréstimo de ' + emprestimo.equipamentoNome"
+                        class="p-1.5 rounded-lg text-muted hover:text-main hover:bg-slate-500/10 transition-colors cursor-pointer">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <circle cx="12" cy="5" r="1.75" />
+                          <circle cx="12" cy="12" r="1.75" />
+                          <circle cx="12" cy="19" r="1.75" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    @if (menuAbertoId() === emprestimo.id) {
+                      <div [class]="($last ? 'bottom-full mb-1' : 'mt-1') + ' absolute right-4 w-36 rounded-xl bg-surface border border-app shadow-xl py-1 z-50 text-left'">
+                        
+                        <button type="button" (click)="iniciarEdicao(emprestimo)"
+                          class="w-full px-3.5 py-2 text-xs font-medium text-main hover:bg-slate-500/10 flex items-center gap-2 cursor-pointer">
+                          Editar
+                        </button>
+
+                        <button type="button" (click)="excluir(emprestimo.id)"
+                          class="w-full px-3.5 py-2 text-xs font-medium text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer">
+                          Excluir
+                        </button>
+                      </div>
+                    }
+                    
+                  </td>
+
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
-      </li>
-      }
-    </ul>
+      </div>
     }
   </section>
+
+  <!-- MODAL DE NOVO / EDITAR EMPRÉSTIMO -->
+  @if (modalAberto()) {
+    <div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+      <section aria-labelledby="titulo-form-emprestimo"
+        class="bg-surface border border-app rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5">
+        
+        <!-- Cabeçalho do Modal -->
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 id="titulo-form-emprestimo" class="text-lg font-bold text-main leading-tight">
+              {{ editandoId() !== null ? 'Editar empréstimo' : 'Novo empréstimo' }}
+            </h3>
+            <p class="text-xs text-muted mt-1 leading-relaxed">
+              Selecione quem vai receber e qual equipamento disponível será emprestado.
+            </p>
+          </div>
+          <button type="button" (click)="cancelarEdicao()" aria-label="Fechar janela"
+            class="p-1.5 rounded-lg text-muted hover:text-main transition-colors cursor-pointer shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form #formEmprestimo="ngForm" (ngSubmit)="salvar()" class="space-y-4">
+          
+          <!-- Usuário -->
+          <div>
+            <label for="usuario-emprestimo" class="block text-xs font-bold text-main mb-1.5">
+              Usuário <span class="text-rose-500">*</span>
+            </label>
+            <select id="usuario-emprestimo" name="usuarioId" [(ngModel)]="usuarioId" required
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+              <option value="" disabled>Selecione o usuário</option>
+              @for (usuario of usuarios(); track usuario.id) {
+                <option [value]="usuario.id">{{ usuario.nome }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Equipamento disponível -->
+          <div>
+            <label for="equipamento-emprestimo" class="block text-xs font-bold text-main mb-1.5">
+              Equipamento disponível <span class="text-rose-500">*</span>
+            </label>
+            <select id="equipamento-emprestimo" name="equipamentoId" [(ngModel)]="equipamentoId" required
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+              <option value="" disabled>Selecione o equipamento</option>
+              @for (equipamento of equipamentosDisponiveis(); track equipamento.id) {
+                <option [value]="equipamento.id">
+                  {{ equipamento.nome }} ({{ equipamento.patrimonio }})
+                </option>
+              }
+            </select>
+          </div>
+
+          <!-- Data do empréstimo + Devolução prevista (2 colunas) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label for="data-emprestimo" class="block text-xs font-bold text-main mb-1.5">
+                Data do empréstimo <span class="text-rose-500">*</span>
+              </label>
+              <input id="data-emprestimo" name="dataEmprestimo" type="date" [(ngModel)]="dataEmprestimo" required
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+            </div>
+
+            <div>
+              <label for="data-devolucao-prevista" class="block text-xs font-bold text-main mb-1.5">
+                Devolução prevista <span class="text-rose-500">*</span>
+              </label>
+              <input id="data-devolucao-prevista" name="dataDevolucaoPrevista" type="date" [(ngModel)]="dataDevolucaoPrevista" required
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+            </div>
+          </div>
+
+          <!-- Status (exibido apenas na edição, pois no novo é ATIVO automaticamente) -->
+          @if (editandoId() !== null) {
+            <div>
+              <label for="status-emprestimo" class="block text-xs font-bold text-main mb-1.5">
+                Status <span class="text-rose-500">*</span>
+              </label>
+              <select id="status-emprestimo" name="status" [(ngModel)]="status" required
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+                <option value="ATIVO">Ativo</option>
+                <option value="DEVOLVIDO">Concluído (Devolvido)</option>
+                <option value="ATRASADO">Atrasado</option>
+              </select>
+            </div>
+          }
+
+          <!-- Observações -->
+          <div>
+            <label for="observacoes-emprestimo" class="block text-xs font-bold text-main mb-1.5">
+              Observações
+            </label>
+            <textarea id="observacoes-emprestimo" name="observacoes" [(ngModel)]="observacoes" rows="3"
+              placeholder="Finalidade, acessórios entregues, orientações..."
+              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors"></textarea>
+          </div>
+
+          <!-- Caixa de aviso informativo -->
+          @if (editandoId() === null) {
+            <div class="flex items-start gap-2.5 p-3.5 rounded-xl bg-blue-500/15 border border-blue-500/30 text-xs text-main">
+              <svg class="w-4 h-4 text-blue-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8h.01M12 12v4" />
+              </svg>
+              <p class="leading-relaxed">
+                Ao confirmar, o empréstimo fica ativo e o equipamento passa a constar como emprestado.
+              </p>
+            </div>
+          }
+
+          <!-- Botões de ação -->
+          <div class="flex items-center justify-end gap-2.5 pt-2">
+            <button type="button" (click)="cancelarEdicao()"
+              class="px-4 py-2 rounded-lg border border-app bg-app text-xs font-bold text-main hover:opacity-80 transition-opacity cursor-pointer">
+              Cancelar
+            </button>
+            <button type="submit" [disabled]="formEmprestimo.invalid"
+              class="btn-primary px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all cursor-pointer">
+              {{ editandoId() !== null ? 'Salvar alterações' : 'Registrar empréstimo' }}
+            </button>
+          </div>
+        </form>
+
+      </section>
+    </div>
+  }
+
 </section>
