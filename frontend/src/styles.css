@@ -117,3 +117,27 @@ body.tema-escuro-contraste {
   color: var(--hc-btn-text);
   border: var(--border-width) solid var(--hc-btn-border);
 }
+
+/* Garante que a logo azul-escura fique visível em todos os 4 temas */
+body.tema-escuro .logo-img {
+  filter: brightness(0) invert(1);
+}
+
+body.tema-escuro-contraste .logo-img {
+  filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(5deg);
+}
+
+body.tema-claro .logo-img,
+body.tema-claro-contraste .logo-img {
+  filter: none;
+}
+
+body.tema-claro .logo-badge img,
+body.tema-claro-contraste .logo-badge img {
+  filter: brightness(0) invert(1);
+}
+
+body.tema-escuro .logo-badge img,
+body.tema-escuro-contraste .logo-badge img {
+  filter: brightness(0);
+}
