@@ -85,4 +85,11 @@
     {{ equipamentosFiltrados().length }} equipamento(s) encontrado(s)
   </p>
 
+  <!-- Alerta de Erro -->
+  @if (erro()) {
+    <div role="alert" class="p-3.5 rounded-lg bg-rose-500/15 border border-rose-500 text-rose-500 text-sm font-medium">
+      {{ erro() }}
+    </div>
+  }
+
 </section>
