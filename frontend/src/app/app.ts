@@ -34,4 +34,18 @@ export class App {
       return null;
     }
   }
+
+    // Gera as iniciais do nome do usuário para exibir em avatares (ex: "João Silva" -> "JS").
+
+  iniciaisUsuario(): string {
+    const nome = this.usuarioLogado()?.nome?.trim();
+
+    if (!nome) return 'US';
+
+    const partes = nome.split(/\s+/);
+    
+    if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+  }
 }
