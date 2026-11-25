@@ -78,175 +78,42 @@ body.tema-escuro-contraste {
   --hc-btn-border: #FDE047;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Classes utilitárias conectadas ao tema ativo */
+.bg-app { background-color: var(--bg-app); color: var(--text-main); }
+.bg-surface { background-color: var(--bg-surface); }
+.text-main { color: var(--text-main); }
+.text-muted { color: var(--text-muted); }
+.border-app { border-color: var(--border-color); border-width: var(--border-width); }
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+.input-app {
+  background-color: var(--bg-input);
   color: var(--text-main);
-  background-color: var(--bg-page);
+  border: var(--border-width) solid var(--border-color);
+}
+.input-app:focus {
+  outline: 2px solid var(--link-color);
+  outline-offset: 1px;
 }
 
-h1, h2, h3, p, ul {
-  margin-top: 0;
+.btn-primary {
+  background-color: var(--accent-bg);
+  color: var(--accent-text);
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--accent-hover);
 }
 
-:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
+.link-app {
+  color: var(--link-color);
 }
 
-/* Utilitário de acessibilidade para leitores de tela */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.logo-badge {
+  background: var(--logo-bg);
+  color: var(--logo-icon);
 }
 
-/* Seções e cartões das páginas */
-main > * > section {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  padding: 20px;
-}
-
-main > * > section > p {
-  color: var(--text-muted);
-  margin-bottom: 20px;
-}
-
-main section > section + section {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-color);
-}
-
-/* Formulários */
-form {
-  display: grid;
-  gap: 14px;
-  max-width: 560px;
-}
-
-form > div {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-label {
-  font-weight: 600;
-  color: var(--text-main);
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  min-height: 42px;
-  padding: 9px 12px;
-  font: inherit;
-  color: var(--text-main);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--primary);
-}
-
-textarea {
-  min-height: 84px;
-  resize: vertical;
-}
-
-/* Botões */
-button {
-  min-height: 40px;
-  padding: 8px 14px;
-  font: inherit;
-  font-weight: 600;
-  color: #ffffff;
-  background-color: var(--primary);
-  border: 1px solid var(--primary);
-  border-radius: var(--radius);
-  cursor: pointer;
-}
-
-button:hover:not(:disabled) {
-  background-color: var(--primary-hover);
-  border-color: var(--primary-hover);
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-button[type="button"] {
-  color: var(--text-main);
-  background-color: var(--bg-subtle);
-  border-color: var(--border-color);
-}
-
-button[type="button"]:hover:not(:disabled) {
-  background-color: var(--primary-soft);
-  border-color: #9ec5b8;
-}
-
-/* Listas de itens */
-ul {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-main li {
-  padding: 14px 16px;
-  background-color: var(--bg-page);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-}
-
-main li > div {
-  margin-top: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* Mensagens de erro e aviso */
-[role="alert"] {
-  padding: 12px 14px;
-  color: var(--danger);
-  background-color: var(--danger-bg);
-  border: 1px solid #fecdca;
-  border-radius: var(--radius);
-  font-weight: 500;
-}
-
-[role="status"] {
-  padding: 12px 14px;
-  color: var(--primary-hover);
-  background-color: var(--primary-soft);
-  border: 1px solid #b7dfd2;
-  border-radius: var(--radius);
-  font-weight: 500;
+.btn-hc {
+  background-color: var(--hc-btn-bg);
+  color: var(--hc-btn-text);
+  border: var(--border-width) solid var(--hc-btn-border);
 }
