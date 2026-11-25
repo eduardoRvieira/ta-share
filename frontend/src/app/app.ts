@@ -48,4 +48,22 @@ export class App {
   
     return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
   }
+
+  // Traduz a chave do perfil do banco/sistema para um texto amigável na tela.
+
+  perfilFormatado(): string {
+    const perfil = this.usuarioLogado()?.perfil;
+    const mapa: Record<string, string> = {
+      ADMIN: 'Administrador',
+      PROFISSIONAL: 'Profissional',
+      BENEFICIARIO: 'Beneficiário'
+    };
+    return perfil ? (mapa[perfil] || perfil) : '';
+  }
+
+
+  // Inverte o estado atual do menu 
+  alternarMenu(): void {
+    this.menuAberto.update((v) => !v);
+  }
 }
