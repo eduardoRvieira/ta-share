@@ -182,6 +182,19 @@
     </main>
   </div>
 
-  
+  <!-- FOOTER GLOBAL -->
+  <footer class="bg-surface border-t border-app py-3.5 px-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted">
+      <div class="flex items-center gap-2">
+        <img src="/favicon-tashare.png" alt="" aria-hidden="true" class="logo-img w-4 h-4 object-contain">
+        <p class="font-medium text-main">TA.share — Projeto Integrador</p>
+      </div>
+      <div class="flex lg:hidden items-center gap-2">
+        <button type="button" (click)="lerPagina()" class="underline link-app cursor-pointer">Ouvir tela</button>
+        <span>·</span>
+        <button type="button" (click)="pararLeitura()" class="underline text-muted cursor-pointer">Parar</button>
+      </div>
+    </div>
+  </footer>
 
 </div>
