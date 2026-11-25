@@ -16,12 +16,16 @@ export class App {
   }
 
   sair(): void {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    localStorage.removeItem('ta_share_usuario');
-    this.router.navigate(['/login']);
+  if (!confirm('Deseja realmente sair?')) {
+    return;
   }
+
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  localStorage.removeItem('ta_share_usuario');
+  this.router.navigate(['/login']);
+}
 
   lerPagina(): void {
     if (!('speechSynthesis' in window)) {
