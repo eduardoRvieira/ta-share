@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EmprestimoService } from '../../services/emprestimo.service';
 import { UsuarioService } from '../../services/usuario.service';
@@ -22,8 +22,79 @@ export class Emprestimos implements OnInit {
   protected readonly equipamentos = signal<EquipamentoResponse[]>([]);
   protected readonly carregando = signal(false);
   protected readonly erro = signal<string | null>(null);
-  protected readonly editandoId = signal<number | null>(null);
 
+  // Controle do modal e menu de ações da linha
+  protected readonly modalAberto = signal(false);
+  protected readonly editandoId = signal<number | null>(null);
+  protected readonly menuAbertoId = signal<number | null>(null);
+
+  // Filtros da listagem
+  protected readonly filtroSituacao = signal<'TODOS' | 'ATIVO' | 'ATRASADO' | 'CONCLUIDO'>('TODOS');
+  protected readonly filtroBusca = signal('');
+
+  // Mapas auxiliares para exibir patrimônio e e-mail na tabela
+  protected readonly mapaEquipamentos = computed(() => {
+    const mapa: Record<number, EquipamentoResponse> = {};
+    for (const eq of this.equipamentos()) {
+      mapa[eq.id] = eq;
+    }
+    return mapa;
+  });
+
+  protected readonly mapaUsuarios = computed(() => {
+    const mapa: Record<number, UsuarioResponse> = {};
+    for (const u of this.usuarios()) {
+      mapa[u.id] = u;
+    }
+    return mapa;
+  });
+
+  // Equipamentos disponíveis para o select de novo empréstimo
+  protected readonly equipamentosDisponiveis = computed(() => {
+    const idEditando = this.editandoId();
+    return this.equipamentos().filter(
+      (eq) => eq.statusItem === 'DISPONIVEL' || (idEditando !== null && eq.id === Number(this.equipamentoId))
+    );
+  });
+
+  // Contadores para os botões de filtro
+  protected readonly contadores = computed(() => {
+    const lista = this.emprestimos();
+    return {
+      todos: lista.length,
+      ativos: lista.filter((e) => e.status === 'ATIVO').length,
+      atrasados: lista.filter((e) => e.status === 'ATRASADO').length,
+      concluidos: lista.filter((e) => e.status === 'DEVOLVIDO' || e.status === 'CONCLUIDO').length
+    };
+  });
+
+  // Lista filtrada reativa
+  protected readonly emprestimosFiltrados = computed(() => {
+    const situacao = this.filtroSituacao();
+    const termo = this.filtroBusca().toLowerCase().trim();
+
+    return this.emprestimos().filter((emp) => {
+      const bateSituacao =
+        situacao === 'TODOS' ||
+        (situacao === 'CONCLUIDO'
+          ? emp.status === 'DEVOLVIDO' || emp.status === 'CONCLUIDO'
+          : emp.status === situacao);
+
+      const patrimonio = this.mapaEquipamentos()[emp.equipamentoId]?.patrimonio?.toLowerCase() ?? '';
+      const emailUsuario = this.mapaUsuarios()[emp.usuarioId]?.email?.toLowerCase() ?? '';
+
+      const bateBusca =
+        !termo ||
+        emp.equipamentoNome.toLowerCase().includes(termo) ||
+        emp.usuarioNome.toLowerCase().includes(termo) ||
+        patrimonio.includes(termo) ||
+        emailUsuario.includes(termo);
+
+      return bateSituacao && bateBusca;
+    });
+  });
+
+  // Campos do formulário
   usuarioId: number | '' = '';
   equipamentoId: number | '' = '';
   dataEmprestimo = '';
@@ -64,7 +135,19 @@ export class Emprestimos implements OnInit {
     });
   }
 
+  abrirNovo(): void {
+    this.limparFormulario();
+    const hoje = new Date();
+    const prevista = new Date();
+    prevista.setDate(hoje.getDate() + 30);
+
+    this.dataEmprestimo = hoje.toISOString().split('T')[0];
+    this.dataDevolucaoPrevista = prevista.toISOString().split('T')[0];
+    this.modalAberto.set(true);
+  }
+
   iniciarEdicao(emprestimo: EmprestimoResponse): void {
+    this.menuAbertoId.set(null);
     this.editandoId.set(emprestimo.id);
     this.usuarioId = emprestimo.usuarioId;
     this.equipamentoId = emprestimo.equipamentoId;
@@ -73,9 +156,15 @@ export class Emprestimos implements OnInit {
     this.status = emprestimo.status;
     this.observacoes = emprestimo.observacoes ?? '';
     this.erro.set(null);
+    this.modalAberto.set(true);
   }
 
   cancelarEdicao(): void {
+    this.limparFormulario();
+    this.modalAberto.set(false);
+  }
+
+  private limparFormulario(): void {
     this.editandoId.set(null);
     this.usuarioId = '';
     this.equipamentoId = '';
@@ -85,8 +174,12 @@ export class Emprestimos implements OnInit {
     this.observacoes = '';
   }
 
+  alternarMenuLinha(id: number): void {
+    this.menuAbertoId.update((atual) => (atual === id ? null : id));
+  }
+
   salvar(): void {
-    if (!this.usuarioId || !this.equipamentoId || !this.dataDevolucaoPrevista || !this.status) {
+    if (!this.usuarioId || !this.equipamentoId || !this.dataEmprestimo || !this.dataDevolucaoPrevista || !this.status) {
       return;
     }
 
@@ -131,13 +224,14 @@ export class Emprestimos implements OnInit {
 
   devolver(emprestimo: EmprestimoResponse): void {
     this.erro.set(null);
+    const hoje = new Date().toISOString().split('T')[0];
 
     this.emprestimoService.atualizar(emprestimo.id, {
       usuarioId: emprestimo.usuarioId,
       equipamentoId: emprestimo.equipamentoId,
       dataEmprestimo: emprestimo.dataEmprestimo,
       dataDevolucaoPrevista: emprestimo.dataDevolucaoPrevista,
-      dataDevolucaoReal: emprestimo.dataDevolucaoReal,
+      dataDevolucaoReal: emprestimo.dataDevolucaoReal || hoje,
       status: 'DEVOLVIDO',
       observacoes: emprestimo.observacoes
     }).subscribe({
@@ -155,6 +249,7 @@ export class Emprestimos implements OnInit {
   }
 
   excluir(id: number): void {
+    this.menuAbertoId.set(null);
     if (!confirm('Deseja realmente excluir este empréstimo?')) return;
 
     this.erro.set(null);
@@ -170,5 +265,16 @@ export class Emprestimos implements OnInit {
         this.erro.set(err?.error?.message || 'Erro ao excluir empréstimo.');
       }
     });
+  }
+
+  formatarData(dataIso: string | null | undefined): string {
+    if (!dataIso) return '—';
+    const partes = dataIso.split('T')[0].split('-');
+    if (partes.length !== 3) return dataIso;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
+  isConcluido(status: string): boolean {
+    return status === 'DEVOLVIDO' || status === 'CONCLUIDO';
   }
 }
