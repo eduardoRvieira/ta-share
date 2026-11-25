@@ -20,4 +20,64 @@
     </button>
   </div>
 
+  <!-- Barra de Filtros -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div>
+      <label for="busca-equipamento" class="block text-xs font-bold text-main mb-1.5">
+        Buscar equipamento
+      </label>
+      <div class="relative">
+        <svg class="w-4 h-4 text-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+        </svg>
+        <input id="busca-equipamento" type="text"
+          [ngModel]="filtroBusca()" (ngModelChange)="filtroBusca.set($event)"
+          placeholder="Nome ou nº de patrimônio"
+          class="input-app w-full rounded-lg pl-10 pr-3.5 py-2 text-sm transition-colors">
+      </div>
+    </div>
+
+    <div>
+      <label for="filtro-categoria" class="block text-xs font-bold text-main mb-1.5">
+        Categoria
+      </label>
+      <select id="filtro-categoria"
+        [ngModel]="filtroCategoria()" (ngModelChange)="filtroCategoria.set($event)"
+        class="input-app w-full rounded-lg px-3.5 py-2 text-sm transition-colors">
+        <option value="">Todas as categorias</option>
+        @for (categoria of categorias(); track categoria.id) {
+          <option [value]="categoria.id">{{ categoria.nome }}</option>
+        }
+      </select>
+    </div>
+
+    <div>
+      <label for="filtro-status" class="block text-xs font-bold text-main mb-1.5">
+        Status
+      </label>
+      <select id="filtro-status"
+        [ngModel]="filtroStatus()" (ngModelChange)="filtroStatus.set($event)"
+        class="input-app w-full rounded-lg px-3.5 py-2 text-sm transition-colors">
+        <option value="">Todos os status</option>
+        <option value="DISPONIVEL">Disponível</option>
+        <option value="EMPRESTADO">Emprestado</option>
+        <option value="MANUTENCAO">Manutenção</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="filtro-conservacao" class="block text-xs font-bold text-main mb-1.5">
+        Conservação
+      </label>
+      <select id="filtro-conservacao"
+        [ngModel]="filtroConservacao()" (ngModelChange)="filtroConservacao.set($event)"
+        class="input-app w-full rounded-lg px-3.5 py-2 text-sm transition-colors">
+        <option value="">Qualquer conservação</option>
+        <option value="NOVO">Novo</option>
+        <option value="BOM">Bom</option>
+        <option value="NECESSITA_MANUTENCAO">Necessita manutenção</option>
+      </select>
+    </div>
+  </div>
+
 </section>
