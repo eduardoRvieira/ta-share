@@ -31,14 +31,46 @@ export class Login {
   senha = '';
 
   // Campos extras de cadastro
+  tipoPessoa: 'PF' | 'PJ' = 'PF';
   nome = '';
   cpf = '';
   telefone = '';
+  perfil = 'BENEFICIARIO';
 
   alternarModo(): void {
     this.modoCadastro.update((v) => !v);
     this.erro.set(null);
     this.aviso.set(null);
+  }
+
+  formatarDocumento(valor: string): void {
+    const numeros = valor.replace(/\D/g, '');
+    if (this.tipoPessoa === 'PF') {
+      this.cpf = numeros
+        .slice(0, 11)
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2') .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else {
+      this.cpf = numeros
+        .slice(0, 14)
+        .replace(/^(\d{2})(\d)/, '$1.$2')
+        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+        .replace(/\.(\d{3})(\d)/, '.$1/$2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+    }
+  }
+
+  formatarTelefone(valor: string): void {
+    const numeros = valor.replace(/\D/g, '').slice(0, 11);
+    if (numeros.length <= 10) {
+      this.telefone = numeros
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+      this.telefone = numeros
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2');
+    }
   }
 
   entrar(): void {
@@ -77,7 +109,7 @@ export class Login {
       senha: this.senha,
       cpf: this.cpf.trim(),
       telefone: this.telefone.trim() || null,
-      perfil: 'COMUM'
+      perfil: this.perfil
     }).subscribe({
       next: () => {
         this.enviando.set(false);
