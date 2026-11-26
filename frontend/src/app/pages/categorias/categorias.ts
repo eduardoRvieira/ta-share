@@ -1,13 +1,15 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { CategoriaService } from '../../services/categoria.service';
 import { EquipamentoService } from '../../services/equipamento.service';
 import { CategoriaResponse } from '../../models/categoria.model';
 import { EquipamentoResponse } from '../../models/equipamento.model';
+import { PageHeader } from '../../shared/components/page-header/page-header';
+import { CategoriaFormPayload, CategoriaModal } from './categoria-modal/categoria-modal';
+import { extrairMensagemErro } from '../../shared/utils/http-erro';
 
 @Component({
   selector: 'app-categorias',
-  imports: [FormsModule],
+  imports: [PageHeader, CategoriaModal],
   templateUrl: './categorias.html'
 })
 export class Categorias implements OnInit {
@@ -19,11 +21,9 @@ export class Categorias implements OnInit {
   protected readonly carregando = signal(false);
   protected readonly erro = signal<string | null>(null);
 
-  // Controle do modal
   protected readonly modalAberto = signal(false);
-  protected readonly editandoId = signal<number | null>(null);
+  protected readonly categoriaEmEdicao = signal<CategoriaResponse | null>(null);
 
-  // Mapa reativo com a contagem de equipamentos por categoriaId
   protected readonly contagemPorCategoria = computed(() => {
     const mapa: Record<number, number> = {};
     for (const eq of this.equipamentos()) {
@@ -31,9 +31,6 @@ export class Categorias implements OnInit {
     }
     return mapa;
   });
-
-  nome = '';
-  descricao = '';
 
   ngOnInit(): void {
     this.carregarCategorias();
@@ -59,67 +56,41 @@ export class Categorias implements OnInit {
   carregarEquipamentos(): void {
     this.equipamentoService.listar().subscribe({
       next: (dados) => this.equipamentos.set(dados),
-      error: () => {
-        // Falha silenciosa apenas na contagem auxiliar
-      }
+      error: () => {}
     });
   }
 
   abrirNova(): void {
-    this.limparFormulario();
+    this.categoriaEmEdicao.set(null);
+    this.erro.set(null);
     this.modalAberto.set(true);
   }
 
   iniciarEdicao(categoria: CategoriaResponse): void {
-    this.editandoId.set(categoria.id);
-    this.nome = categoria.nome;
-    this.descricao = categoria.descricao ?? '';
+    this.categoriaEmEdicao.set(categoria);
     this.erro.set(null);
     this.modalAberto.set(true);
   }
 
-  cancelarEdicao(): void {
-    this.limparFormulario();
+  fecharModal(): void {
+    this.categoriaEmEdicao.set(null);
     this.modalAberto.set(false);
   }
 
-  private limparFormulario(): void {
-    this.editandoId.set(null);
-    this.nome = '';
-    this.descricao = '';
-  }
-
-  salvar(): void {
-    if (!this.nome.trim()) return;
-
+  salvar({ id, payload }: { id: number | null; payload: CategoriaFormPayload }): void {
     this.erro.set(null);
-    const payload = {
-      nome: this.nome.trim(),
-      descricao: this.descricao.trim() || null
-    };
+    const requisicao = id !== null
+      ? this.categoriaService.atualizar(id, payload)
+      : this.categoriaService.criar(payload);
 
-    const idAtual = this.editandoId();
-
-    if (idAtual !== null) {
-      this.categoriaService.atualizar(idAtual, payload).subscribe({
-        next: () => {
-          this.cancelarEdicao();
-          this.carregarCategorias();
-        },
-        error: (err) => {
-          this.erro.set(err?.error?.message || 'Erro ao atualizar categoria.');
-        }
-      });
-      return;
-    }
-
-    this.categoriaService.criar(payload).subscribe({
+    requisicao.subscribe({
       next: () => {
-        this.cancelarEdicao();
+        this.fecharModal();
         this.carregarCategorias();
       },
       error: (err) => {
-        this.erro.set(err?.error?.message || 'Erro ao cadastrar categoria.');
+        const fallback = id !== null ? 'Erro ao atualizar categoria.' : 'Erro ao cadastrar categoria.';
+        this.erro.set(extrairMensagemErro(err, fallback));
       }
     });
   }
@@ -130,13 +101,13 @@ export class Categorias implements OnInit {
     this.erro.set(null);
     this.categoriaService.deletar(id).subscribe({
       next: () => {
-        if (this.editandoId() === id) {
-          this.cancelarEdicao();
+        if (this.categoriaEmEdicao()?.id === id) {
+          this.fecharModal();
         }
         this.carregarCategorias();
       },
       error: (err) => {
-        this.erro.set(err?.error?.message || 'Erro ao excluir categoria.');
+        this.erro.set(extrairMensagemErro(err, 'Erro ao excluir categoria.'));
       }
     });
   }
