@@ -1,16 +1,61 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { SessaoUsuario } from '../pages/login/login';
 
 const CHAVE_SESSAO = 'ta_share_usuario';
+const TEMPO_INATIVIDADE_MS = 30 * 60 * 1000; // 30 minutos
 
 @Injectable({ providedIn: 'root' })
+
 export class AuthService {
   private readonly router = inject(Router);
 
   readonly usuario = signal<SessaoUsuario | null>(this.lerSessaoStorage());
   readonly estaLogado = computed(() => this.usuario() !== null);
   readonly ehAdmin = computed(() => this.usuario()?.perfil === 'ADMIN');
+  readonly motivoLogout = signal<string | null>(null);
+
+  constructor() {
+    effect((onCleanup) => {
+      if (!this.estaLogado() || typeof window === 'undefined') return;
+
+      let timerId: ReturnType<typeof setTimeout>;
+      let ultimaAtividade = Date.now();
+
+      const encerrarPorInatividade = () => {
+        this.motivoLogout.set('Sua sessão expirou por inatividade após 30 minutos.');
+        this.sair(false);
+      };
+
+      const reiniciarTimer = () => {
+        clearTimeout(timerId);
+        timerId = setTimeout(encerrarPorInatividade, TEMPO_INATIVIDADE_MS);
+      };
+
+      const aoInteragir = () => {
+        const agora = Date.now();
+        if (agora - ultimaAtividade < 1000) return; // evita reiniciar várias vezes no mesmo segundo
+        ultimaAtividade = agora;
+        reiniciarTimer();
+      };
+
+      const eventos: (keyof WindowEventMap)[] = [
+        'mousemove',
+        'mousedown',
+        'keydown',
+        'scroll',
+        'touchstart'
+      ];
+
+      eventos.forEach((ev) => window.addEventListener(ev, aoInteragir, { passive: true }));
+      reiniciarTimer();
+
+      onCleanup(() => {
+        clearTimeout(timerId);
+        eventos.forEach((ev) => window.removeEventListener(ev, aoInteragir));
+      });
+    });
+  }
 
   private lerSessaoStorage(): SessaoUsuario | null {
     if (typeof localStorage === 'undefined') return null;
@@ -24,6 +69,7 @@ export class AuthService {
   }
 
   definirSessao(usuario: SessaoUsuario): void {
+    this.motivoLogout.set(null);
     localStorage.setItem(CHAVE_SESSAO, JSON.stringify(usuario));
     this.usuario.set(usuario);
   }

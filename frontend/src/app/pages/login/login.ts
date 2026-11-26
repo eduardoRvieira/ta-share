@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -20,7 +20,7 @@ export interface SessaoUsuario {
   imports: [FormsModule],
   templateUrl: './login.html'
 })
-export class Login {
+export class Login implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly usuarioService = inject(UsuarioService);
@@ -42,6 +42,14 @@ export class Login {
   cpf = '';
   telefone = '';
   perfil = 'BENEFICIARIO';
+
+  ngOnInit(): void {
+    const motivo = this.auth.motivoLogout();
+    if (motivo) {
+      this.aviso.set(motivo);
+      this.auth.motivoLogout.set(null);
+    }
+  }
 
   alternarModo(): void {
     this.modoCadastro.update((v) => !v);
