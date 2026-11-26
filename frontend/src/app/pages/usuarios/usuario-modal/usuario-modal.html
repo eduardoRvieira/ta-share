@@ -1,0 +1,99 @@
+<app-modal
+  [aberto]="aberto()"
+  tituloId="titulo-form-usuario"
+  [titulo]="usuarioEmEdicao() ? 'Editar usuário' : 'Novo usuário'"
+  [mostrarAvisoObrigatorio]="true"
+  (fechar)="fechar.emit()">
+
+  <form #formUsuario="ngForm" (ngSubmit)="aoSubmeter()" class="space-y-4">
+    <div>
+      <span class="block text-xs font-bold text-main mb-1.5">
+        Tipo de pessoa <span class="text-rose-500">*</span>
+      </span>
+      <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
+        <label [class]="tipoPessoa === 'PF'
+          ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
+          : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
+          <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+          <span class="truncate">Pessoa física</span>
+        </label>
+        <label [class]="tipoPessoa === 'PJ'
+          ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
+          : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
+          <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+          <span class="truncate">Pessoa jurídica</span>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <label for="nome-usuario" class="block text-xs font-bold text-main mb-1.5">
+        {{ tipoPessoa === 'PF' ? 'Nome completo' : 'Razão social' }} <span class="text-rose-500">*</span>
+      </label>
+      <input id="nome-usuario" name="nome" type="text" [(ngModel)]="nome" required
+        class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="cpf-usuario" class="block text-xs font-bold text-main mb-1.5">
+          {{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }} <span class="text-rose-500">*</span>
+        </label>
+        <input id="cpf-usuario" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="formatarDocumento($event)"
+          [required]="!usuarioEmEdicao()"
+          [placeholder]="tipoPessoa === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'"
+          class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm font-mono transition-colors">
+        <p class="text-[11px] text-muted mt-1">Digite só os números; a pontuação é automática.</p>
+      </div>
+
+      <div>
+        <label for="telefone-usuario" class="block text-xs font-bold text-main mb-1.5">
+          Telefone
+        </label>
+        <input id="telefone-usuario" name="telefone" type="tel" [(ngModel)]="telefone" (ngModelChange)="formatarTelefone($event)"
+          placeholder="(00) 00000-0000"
+          class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+        <p class="text-[11px] text-muted mt-1">Com DDD.</p>
+      </div>
+    </div>
+
+    <div>
+      <label for="email-usuario" class="block text-xs font-bold text-main mb-1.5">
+        E-mail <span class="text-rose-500">*</span>
+      </label>
+      <input id="email-usuario" name="email" type="email" [(ngModel)]="email" required email
+        class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="perfil-usuario" class="block text-xs font-bold text-main mb-1.5">
+          Perfil <span class="text-rose-500">*</span>
+        </label>
+        <select id="perfil-usuario" name="perfil" [(ngModel)]="perfil" required
+          [disabled]="!ehAdmin()"
+          class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <option value="BENEFICIARIO">Beneficiário</option>
+          <option value="PROFISSIONAL">Profissional</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="senha-usuario" class="block text-xs font-bold text-main mb-1.5">
+          Senha
+          @if (!usuarioEmEdicao()) {
+            <span class="text-rose-500">*</span>
+          }
+        </label>
+        <input id="senha-usuario" name="senha" type="password" [(ngModel)]="senha"
+          [required]="!usuarioEmEdicao()"
+          [placeholder]="usuarioEmEdicao() ? 'Deixe em branco para manter' : ''"
+          class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+      </div>
+    </div>
+
+    <app-form-actions [desabilitado]="!!formUsuario.invalid" (cancelar)="fechar.emit()" />
+  </form>
+
+</app-modal>
