@@ -122,7 +122,9 @@ export class Login {
       },
       error: (err) => {
         this.enviando.set(false);
-        this.erro.set(err?.error?.message || 'Não foi possível criar a conta. Verifique os dados.');
+        this.erro.set(
+          this.tratarErroCadastro(err, 'Não foi possível concluir o cadastro. Verifique os dados informados.')
+        );
       }
     });
   }

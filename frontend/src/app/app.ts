@@ -35,7 +35,8 @@ export class App {
     }
   }
 
-    // Gera as iniciais do nome do usuário para exibir em avatares (ex: "João Silva" -> "JS").
+
+  // Gera as iniciais do nome do usuário para exibir em avatares (ex: "João Silva" -> "JS").
 
   iniciaisUsuario(): string {
     const nome = this.usuarioLogado()?.nome?.trim();
@@ -48,6 +49,7 @@ export class App {
   
     return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
   }
+
 
   // Traduz a chave do perfil do banco/sistema para um texto amigável na tela.
 
@@ -66,6 +68,11 @@ export class App {
   alternarMenu(): void {
     this.menuAberto.update((v) => !v);
   }
+
+  /**
+   * Realiza o logout do usuário após confirmação, interrompe qualquer leitura de voz ativa,
+   * limpa os dados locais e redireciona para a tela de login.
+   */
 
   sair(): void {
     if (!confirm('Deseja realmente sair?')) {
