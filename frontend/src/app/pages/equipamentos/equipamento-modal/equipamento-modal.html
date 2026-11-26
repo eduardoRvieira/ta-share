@@ -1,0 +1,81 @@
+<app-modal
+  [aberto]="aberto()"
+  tituloId="titulo-form-equipamento"
+  [titulo]="equipamentoEmEdicao() ? 'Editar equipamento' : 'Novo equipamento'"
+  [mostrarAvisoObrigatorio]="true"
+  (fechar)="fechar.emit()">
+
+  <form #formEquipamento="ngForm" (ngSubmit)="aoSubmeter()" class="space-y-4">
+    <div>
+      <label for="nome-equipamento" class="block text-xs font-bold text-main mb-1.5">
+        Nome <span class="text-rose-500">*</span>
+      </label>
+      <input id="nome-equipamento" name="nome" type="text" [(ngModel)]="nome" required
+        placeholder="Ex.: Cadeira de rodas dobrável"
+        class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="patrimonio-equipamento" class="block text-xs font-bold text-main mb-1.5">
+          Nº de patrimônio <span class="text-rose-500">*</span>
+        </label>
+        <input id="patrimonio-equipamento" name="patrimonio" type="text" [(ngModel)]="patrimonio" required
+          placeholder="TA-0001"
+          class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm font-mono transition-colors">
+        <p class="text-[11px] text-muted mt-1">Deve ser único.</p>
+      </div>
+
+      <div>
+        <label for="categoria-equipamento" class="block text-xs font-bold text-main mb-1.5">
+          Categoria <span class="text-rose-500">*</span>
+        </label>
+        <select id="categoria-equipamento" name="categoriaId" [(ngModel)]="categoriaId" required
+          class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+          <option value="" disabled>Selecione</option>
+          @for (categoria of categorias(); track categoria.id) {
+            <option [value]="categoria.id">{{ categoria.nome }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="estado-conservacao" class="block text-xs font-bold text-main mb-1.5">
+          Estado de conservação <span class="text-rose-500">*</span>
+        </label>
+        <select id="estado-conservacao" name="estadoConservacao" [(ngModel)]="estadoConservacao" required
+          class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+          <option value="NOVO">Novo</option>
+          <option value="BOM">Bom</option>
+          <option value="NECESSITA_MANUTENCAO">Necessita manutenção</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="status-item" class="block text-xs font-bold text-main mb-1.5">
+          Status <span class="text-rose-500">*</span>
+        </label>
+        <select id="status-item" name="statusItem" [(ngModel)]="statusItem" required
+          class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+          <option value="DISPONIVEL">Disponível</option>
+          <option value="EMPRESTADO">Emprestado</option>
+          <option value="MANUTENCAO">Manutenção</option>
+        </select>
+      </div>
+    </div>
+
+    <div>
+      <label for="descricao-equipamento" class="block text-xs font-bold text-main mb-1.5">
+        Descrição
+      </label>
+      <textarea id="descricao-equipamento" name="descricao" [(ngModel)]="descricao" rows="3"
+        placeholder="Medidas, acessórios, observações..."
+        class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors"></textarea>
+    </div>
+
+    <app-form-actions [desabilitado]="!!formEquipamento.invalid" (cancelar)="fechar.emit()" />
+  </form>
+
+</app-modal>
