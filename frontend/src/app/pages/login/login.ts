@@ -3,6 +3,10 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { UsuarioService } from '../../services/usuario.service';
+import { LayoutService } from '../../services/layout.service';
+import { AuthService } from '../../services/auth.service';
+import { formatarDocumentoPorTipo, formatarTelefoneBr } from '../../shared/utils/formatadores';
+import { extrairMensagemErro } from '../../shared/utils/http-erro';
 
 export interface SessaoUsuario {
   id: number;
@@ -20,6 +24,8 @@ export class Login {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly usuarioService = inject(UsuarioService);
+  private readonly layout = inject(LayoutService);
+  private readonly auth = inject(AuthService);
 
   protected readonly erro = signal<string | null>(null);
   protected readonly aviso = signal<string | null>(null);
@@ -44,33 +50,11 @@ export class Login {
   }
 
   formatarDocumento(valor: string): void {
-    const numeros = valor.replace(/\D/g, '');
-    if (this.tipoPessoa === 'PF') {
-      this.cpf = numeros
-        .slice(0, 11)
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1.$2') .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-    } else {
-      this.cpf = numeros
-        .slice(0, 14)
-        .replace(/^(\d{2})(\d)/, '$1.$2')
-        .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-        .replace(/\.(\d{3})(\d)/, '.$1/$2')
-        .replace(/(\d{4})(\d)/, '$1-$2');
-    }
+    this.cpf = formatarDocumentoPorTipo(valor, this.tipoPessoa);
   }
 
   formatarTelefone(valor: string): void {
-    const numeros = valor.replace(/\D/g, '').slice(0, 11);
-    if (numeros.length <= 10) {
-      this.telefone = numeros
-        .replace(/(\d{2})(\d)/, '($1) $2')
-        .replace(/(\d{4})(\d)/, '$1-$2');
-    } else {
-      this.telefone = numeros
-        .replace(/(\d{2})(\d)/, '($1) $2')
-        .replace(/(\d{5})(\d)/, '$1-$2');
-    }
+    this.telefone = formatarTelefoneBr(valor);
   }
 
   entrar(): void {
@@ -85,13 +69,16 @@ export class Login {
       senha: this.senha
     }).subscribe({
       next: (usuario) => {
-        localStorage.setItem('ta_share_usuario', JSON.stringify(usuario));
+        this.auth.definirSessao(usuario);
+        if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+          this.layout.menuAberto.set(true);
+        }
         this.enviando.set(false);
         this.router.navigate(['/equipamentos']);
       },
       error: (err) => {
         this.enviando.set(false);
-        this.erro.set(err?.error?.message || 'E-mail ou senha inválidos.');
+        this.erro.set(extrairMensagemErro(err, 'E-mail ou senha inválidos.'));
       }
     });
   }
@@ -123,29 +110,13 @@ export class Login {
       error: (err) => {
         this.enviando.set(false);
         this.erro.set(
-          this.tratarErroCadastro(err, 'Não foi possível concluir o cadastro. Verifique os dados informados.')
+          extrairMensagemErro(
+            err,
+            'Não foi possível concluir o cadastro. Verifique os dados informados.',
+            this.tipoPessoa
+          )
         );
       }
     });
-  }
-
-  /* Tratamento de Erro */
-
-  private tratarErroCadastro(err: any, fallback: string): string {
-    const msgBruta = String(err?.error?.message || err?.message || '').toLowerCase();
-
-    if (msgBruta.includes('usuarios.cpf') || (msgBruta.includes('duplicate') && msgBruta.includes('cpf'))) {
-      return `Este ${this.tipoPessoa === 'PF' ? 'CPF' : 'CNPJ'} já está cadastrado no sistema.`;
-    }
-
-    if (msgBruta.includes('usuarios.email') || (msgBruta.includes('duplicate') && msgBruta.includes('email'))) {
-      return 'Este e-mail já está cadastrado no sistema.';
-    }
-
-    if (msgBruta.includes('duplicate')) {
-      return 'Já existe um cadastro com esses dados no sistema.';
-    }
-
-    return err?.error?.message || fallback;
   }
 }

@@ -1,7 +1,7 @@
 <div class="flex-1 bg-app text-main flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8">
   <div class="w-full max-w-md mx-auto space-y-6">
 
-    <!-- Identidade Visual (Favicon Oficial no lugar do coração) -->
+    <!-- Identidade Visual -->
     <div class="flex items-center gap-3.5">
       <div class="logo-badge w-12 h-12 rounded-xl flex items-center justify-center shadow-sm shrink-0 p-2">
         <img src="/favicon-tashare.png" alt="Logo TA Share" class="w-full h-full object-contain">
@@ -84,25 +84,24 @@
       } @else {
 
         <!-- FORMULÁRIO DE CADASTRO -->
-        <!-- FORMULÁRIO DE CADASTRO -->
         <form #formCadastro="ngForm" (ngSubmit)="cadastrar()" class="space-y-4">
           
           <div>
             <span class="block text-xs font-bold text-main mb-1.5">
               Tipo de pessoa <span class="text-rose-500">*</span>
             </span>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
               <label [class]="tipoPessoa === 'PF'
-                ? 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-bold ring-2 ring-current'
-                : 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
-                <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5">
-                Pessoa física
+                ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
+                : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
+                <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+                <span class="truncate">Pessoa física</span>
               </label>
               <label [class]="tipoPessoa === 'PJ'
-                ? 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-bold ring-2 ring-current'
-                : 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
-                <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5">
-                Pessoa jurídica
+                ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
+                : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
+                <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+                <span class="truncate">Pessoa jurídica</span>
               </label>
             </div>
           </div>
@@ -123,7 +122,7 @@
               </label>
               <input id="cpf-cadastro" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="formatarDocumento($event)" required
                 [placeholder]="tipoPessoa === 'PF' ? '123.456.789-89' : '12.345.678/0001-90'"
-                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm font-mono transition-colors">
               <p class="text-[11px] text-muted mt-1">Só números; a pontuação é automática.</p>
             </div>
 
