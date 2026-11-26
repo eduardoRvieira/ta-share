@@ -1,0 +1,32 @@
+<app-modal
+  [aberto]="aberto()"
+  tituloId="titulo-form-categoria"
+  largura="md"
+  [titulo]="categoriaEmEdicao() ? 'Editar categoria' : 'Nova categoria'"
+  subtitulo="Ex.: Mobilidade, Baixa visão, Comunicação alternativa."
+  [mostrarAvisoObrigatorio]="true"
+  (fechar)="fechar.emit()">
+
+  <form #formCategoria="ngForm" (ngSubmit)="aoSubmeter()" class="space-y-4">
+    <div>
+      <label for="nome-categoria" class="block text-xs font-bold text-main mb-1.5">
+        Nome <span class="text-rose-500">*</span>
+      </label>
+      <input id="nome-categoria" name="nome" type="text" [(ngModel)]="nome" required
+        placeholder="Ex.: Mobilidade"
+        class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+    </div>
+
+    <div>
+      <label for="descricao-categoria" class="block text-xs font-bold text-main mb-1.5">
+        Descrição
+      </label>
+      <textarea id="descricao-categoria" name="descricao" [(ngModel)]="descricao" rows="3"
+        placeholder="Descreva os tipos de equipamentos desta categoria..."
+        class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors"></textarea>
+    </div>
+
+    <app-form-actions [desabilitado]="!!formCategoria.invalid" (cancelar)="fechar.emit()" />
+  </form>
+
+</app-modal>
