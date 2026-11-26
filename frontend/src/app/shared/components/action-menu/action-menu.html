@@ -1,0 +1,27 @@
+<div class="relative inline-block">
+  <button type="button" (click)="alternar()" [attr.aria-label]="ariaLabel()"
+    class="p-1.5 rounded-lg text-muted hover:text-main hover:bg-slate-500/10 transition-colors cursor-pointer">
+    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+      <circle cx="12" cy="5" r="1.75" />
+      <circle cx="12" cy="12" r="1.75" />
+      <circle cx="12" cy="19" r="1.75" />
+    </svg>
+  </button>
+
+  @if (aberto()) {
+    <div [class]="(abrirParaCima() ? 'bottom-full mb-1' : 'mt-1') + ' absolute right-0 w-36 rounded-xl bg-surface border border-app shadow-xl py-1 z-50 text-left'">
+      @if (mostrarEditar()) {
+        <button type="button" (click)="aoEditar()"
+          class="w-full px-3.5 py-2 text-xs font-medium text-main hover:bg-slate-500/10 flex items-center gap-2 cursor-pointer">
+          Editar
+        </button>
+      }
+      @if (mostrarExcluir()) {
+        <button type="button" (click)="aoExcluir()"
+          class="w-full px-3.5 py-2 text-xs font-medium text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer">
+          Excluir
+        </button>
+      }
+    </div>
+  }
+</div>
