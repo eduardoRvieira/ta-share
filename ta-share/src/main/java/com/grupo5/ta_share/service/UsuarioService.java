@@ -23,6 +23,7 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+
     public List<UsuarioResponseDTO> listarTodos() {
         return usuarioRepository.findAll().stream()
                 .map(this::toResponseDTO)

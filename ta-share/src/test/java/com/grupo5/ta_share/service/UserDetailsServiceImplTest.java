@@ -3,6 +3,7 @@ package com.grupo5.ta_share.service;
 import com.grupo5.ta_share.model.Usuario;
 import com.grupo5.ta_share.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,42 +32,53 @@ class UserDetailsServiceImplTest {
     void setUp() {
         usuario = new Usuario();
         usuario.setId(1);
-        usuario.setNome("Maria Souza");
-        usuario.setEmail("maria@email.com");
-        usuario.setSenha("$2a$10$encryptedPasswordExample"); // Simula senha criptografada
+        usuario.setNome("João Silva");
+        usuario.setEmail("joao@email.com");
+        usuario.setSenha("$2a$10$senhaCriptografada");
         usuario.setPerfil("ADMIN");
     }
 
     @Test
-    void deveCarregarUserDetailsComSucessoQuandoUsuarioExiste() {
+    @DisplayName("Deve carregar UserDetails com perfil definido quando e-mail existir")
+    void deveCarregarUsuarioPorEmailComSucesso() {
+        when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
 
-        when(usuarioRepository.findByEmail("maria@email.com")).thenReturn(Optional.of(usuario));
-
-
-        UserDetails userDetails = userDetailsService.loadUserByUsername("maria@email.com");
-
+        UserDetails userDetails = userDetailsService.loadUserByUsername("joao@email.com");
 
         assertNotNull(userDetails);
-        assertEquals("maria@email.com", userDetails.getUsername());
-        assertEquals("$2a$10$encryptedPasswordExample", userDetails.getPassword());
+        assertEquals("joao@email.com", userDetails.getUsername());
+        assertEquals("$2a$10$senhaCriptografada", userDetails.getPassword());
         assertTrue(userDetails.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
-
-        verify(usuarioRepository, times(1)).findByEmail("maria@email.com");
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN")));
+        verify(usuarioRepository).findByEmail("joao@email.com");
     }
 
     @Test
-    void deveLancarUsernameNotFoundExceptionQuandoUsuarioNaoExiste() {
+    @DisplayName("Deve atribuir role ROLE_COMUM quando o perfil do usuário for nulo")
+    void deveAtribuirRoleComumQuandoPerfilForNulo() {
+        usuario.setPerfil(null);
+        when(usuarioRepository.findByEmail("joao@email.com")).thenReturn(Optional.of(usuario));
 
-        when(usuarioRepository.findByEmail("inexistente@email.com")).thenReturn(Optional.empty());
+        UserDetails userDetails = userDetailsService.loadUserByUsername("joao@email.com");
 
+        assertNotNull(userDetails);
+        assertTrue(userDetails.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_COMUM")));
+        verify(usuarioRepository).findByEmail("joao@email.com");
+    }
 
-        UsernameNotFoundException exception = assertThrows(
+    @Test
+    @DisplayName("Deve lançar UsernameNotFoundException quando e-mail não for encontrado")
+    void deveLancarExcecaoQuandoEmailNaoEncontrado() {
+        String emailInexistente = "naoexiste@email.com";
+        when(usuarioRepository.findByEmail(emailInexistente)).thenReturn(Optional.empty());
+
+        UsernameNotFoundException ex = assertThrows(
                 UsernameNotFoundException.class,
-                () -> userDetailsService.loadUserByUsername("inexistente@email.com")
+                () -> userDetailsService.loadUserByUsername(emailInexistente)
         );
 
-        assertTrue(exception.getMessage().contains("Usuário não encontrado com o e-mail"));
-        verify(usuarioRepository, times(1)).findByEmail("inexistente@email.com");
+        assertEquals("Usuário não encontrado com o e-mail: " + emailInexistente, ex.getMessage());
+        verify(usuarioRepository).findByEmail(emailInexistente);
     }
 }
