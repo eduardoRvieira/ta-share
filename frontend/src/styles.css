@@ -142,7 +142,7 @@ body.tema-escuro-contraste .logo-badge img {
   filter: brightness(0);
 }
 
-/* Destaque do link ativo na Sidebar */
+/* Destaque do link ativo na Sidebar ! IMPORTANTE AQUI */
 .nav-ativo {
   background-color: rgba(110, 168, 254, 0.14);
   color: var(--link-color);
@@ -161,4 +161,13 @@ body.tema-escuro-contraste .nav-ativo {
 .btn-primary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Componentes */
+
+app-page-header,
+app-modal,
+app-header,
+app-footer {
+  display: block;
 }
