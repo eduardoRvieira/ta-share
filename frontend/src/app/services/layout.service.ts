@@ -1,13 +1,31 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LayoutService {
+  private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+
   readonly titulo = signal('TA.share');
-  readonly menuAberto = signal(
-    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
-  );
+  readonly naTelaLogin = signal(false);
+  readonly menuAberto = signal(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
+
+  readonly exibirAreaLogada = computed(() => this.auth.estaLogado() && !this.naTelaLogin());
+
+  constructor() {
+    this.atualizarRota(this.router.url);
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => this.atualizarRota(e.urlAfterRedirects));
+  }
+
+  private atualizarRota(url: string): void {
+    this.naTelaLogin.set(url.startsWith('/login'));
+  }
 
   alternarMenu(): void {
     this.menuAberto.update((v) => !v);

@@ -1,14 +1,12 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { SessaoUsuario } from '../pages/login/login';
-import { LayoutService } from './layout.service';
 
 const CHAVE_SESSAO = 'ta_share_usuario';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly router = inject(Router);
-  private readonly layout = inject(LayoutService);
 
   readonly usuario = signal<SessaoUsuario | null>(this.lerSessaoStorage());
   readonly estaLogado = computed(() => this.usuario() !== null);
@@ -33,8 +31,9 @@ export class AuthService {
   sair(pedirConfirmacao = true): void {
     if (pedirConfirmacao && !confirm('Deseja realmente sair?')) return;
 
-    this.layout.pararLeitura();
-    this.layout.fecharMenuMobile();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
     localStorage.removeItem(CHAVE_SESSAO);
     this.usuario.set(null);
     this.router.navigate(['/login']);
