@@ -4,13 +4,19 @@ import { EquipamentoService } from '../../services/equipamento.service';
 import { CategoriaService } from '../../services/categoria.service';
 import { EquipamentoResponse } from '../../models/equipamento.model';
 import { CategoriaResponse } from '../../models/categoria.model';
+import { PageHeader } from '../../shared/components/page-header/page-header';
+import { ActionMenu } from '../../shared/components/action-menu/action-menu';
+import { StatusBadge } from '../../shared/components/status-badge/status-badge';
+import { SearchInput } from '../../shared/components/search-input/search-input';
+import { EquipamentoFormPayload, EquipamentoModal } from './equipamento-modal/equipamento-modal';
+import { correspondeBusca } from '../../shared/utils/busca';
+import { extrairMensagemErro } from '../../shared/utils/http-erro';
 
 @Component({
   selector: 'app-equipamentos',
-  imports: [FormsModule],
+  imports: [FormsModule, PageHeader, ActionMenu, StatusBadge, SearchInput, EquipamentoModal],
   templateUrl: './equipamentos.html'
 })
-
 export class Equipamentos implements OnInit {
   private readonly equipamentoService = inject(EquipamentoService);
   private readonly categoriaService = inject(CategoriaService);
@@ -20,31 +26,22 @@ export class Equipamentos implements OnInit {
   protected readonly carregando = signal(false);
   protected readonly erro = signal<string | null>(null);
 
-  // Controle do modal de formulário e menu de ações da linha
   protected readonly modalAberto = signal(false);
-  protected readonly editandoId = signal<number | null>(null);
-  protected readonly menuAbertoId = signal<number | null>(null);
+  protected readonly equipamentoEmEdicao = signal<EquipamentoResponse | null>(null);
 
-  // Filtros da listagem
   protected readonly filtroBusca = signal('');
   protected readonly filtroCategoria = signal('');
   protected readonly filtroStatus = signal('');
   protected readonly filtroConservacao = signal('');
 
-  // Lista filtrada reativa
   protected readonly equipamentosFiltrados = computed(() => {
-    const termo = this.filtroBusca().toLowerCase().trim();
+    const termo = this.filtroBusca();
     const catId = this.filtroCategoria();
     const status = this.filtroStatus();
     const conservacao = this.filtroConservacao();
 
     return this.equipamentos().filter((eq) => {
-      const bateBusca =
-        !termo ||
-        eq.nome.toLowerCase().includes(termo) ||
-        eq.patrimonio.toLowerCase().includes(termo) ||
-        (eq.descricao && eq.descricao.toLowerCase().includes(termo));
-
+      const bateBusca = correspondeBusca(termo, eq.nome, eq.patrimonio, eq.descricao);
       const bateCategoria = !catId || String(eq.categoriaId) === catId;
       const bateStatus = !status || eq.statusItem === status;
       const bateConservacao = !conservacao || eq.estadoConservacao === conservacao;
@@ -52,14 +49,6 @@ export class Equipamentos implements OnInit {
       return bateBusca && bateCategoria && bateStatus && bateConservacao;
     });
   });
-
-  // Campos do formulário
-  nome = '';
-  patrimonio = '';
-  categoriaId: number | '' = '';
-  estadoConservacao = 'BOM';
-  statusItem = 'DISPONIVEL';
-  descricao = '';
 
   ngOnInit(): void {
     this.carregarCategorias();
@@ -90,116 +79,54 @@ export class Equipamentos implements OnInit {
   }
 
   abrirNovo(): void {
-    this.limparFormulario();
+    this.equipamentoEmEdicao.set(null);
+    this.erro.set(null);
     this.modalAberto.set(true);
   }
 
   iniciarEdicao(equipamento: EquipamentoResponse): void {
-    this.menuAbertoId.set(null);
-    this.editandoId.set(equipamento.id);
-    this.nome = equipamento.nome;
-    this.patrimonio = equipamento.patrimonio;
-    this.categoriaId = equipamento.categoriaId;
-    this.estadoConservacao = equipamento.estadoConservacao;
-    this.statusItem = equipamento.statusItem;
-    this.descricao = equipamento.descricao ?? '';
+    this.equipamentoEmEdicao.set(equipamento);
     this.erro.set(null);
     this.modalAberto.set(true);
   }
 
-  cancelarEdicao(): void {
-    this.limparFormulario();
+  fecharModal(): void {
+    this.equipamentoEmEdicao.set(null);
     this.modalAberto.set(false);
   }
 
-  private limparFormulario(): void {
-    this.editandoId.set(null);
-    this.nome = '';
-    this.patrimonio = '';
-    this.categoriaId = '';
-    this.estadoConservacao = 'BOM';
-    this.statusItem = 'DISPONIVEL';
-    this.descricao = '';
-  }
-
-  alternarMenuLinha(id: number): void {
-    this.menuAbertoId.update((atual) => (atual === id ? null : id));
-  }
-
-  salvar(): void {
-    if (!this.nome.trim() || !this.patrimonio.trim() || !this.categoriaId || !this.estadoConservacao.trim()) {
-      return;
-    }
-
+  salvar({ id, payload }: { id: number | null; payload: EquipamentoFormPayload }): void {
     this.erro.set(null);
-    const payload = {
-      nome: this.nome.trim(),
-      patrimonio: this.patrimonio.trim(),
-      categoriaId: Number(this.categoriaId),
-      estadoConservacao: this.estadoConservacao.trim(),
-      statusItem: this.statusItem,
-      descricao: this.descricao.trim() || null
-    };
+    const requisicao = id !== null
+      ? this.equipamentoService.atualizar(id, payload)
+      : this.equipamentoService.criar(payload);
 
-    const idAtual = this.editandoId();
-
-    if (idAtual !== null) {
-      this.equipamentoService.atualizar(idAtual, payload).subscribe({
-        next: () => {
-          this.cancelarEdicao();
-          this.carregarEquipamentos();
-        },
-        error: (err) => {
-          this.erro.set(err?.error?.message || 'Erro ao atualizar equipamento.');
-        }
-      });
-      return;
-    }
-
-    this.equipamentoService.criar(payload).subscribe({
+    requisicao.subscribe({
       next: () => {
-        this.cancelarEdicao();
+        this.fecharModal();
         this.carregarEquipamentos();
       },
       error: (err) => {
-        this.erro.set(err?.error?.message || 'Erro ao cadastrar equipamento.');
+        const fallback = id !== null ? 'Erro ao atualizar equipamento.' : 'Erro ao cadastrar equipamento.';
+        this.erro.set(extrairMensagemErro(err, fallback));
       }
     });
   }
 
   excluir(id: number): void {
-    this.menuAbertoId.set(null);
     if (!confirm('Deseja realmente excluir este equipamento?')) return;
 
     this.erro.set(null);
     this.equipamentoService.deletar(id).subscribe({
       next: () => {
-        if (this.editandoId() === id) {
-          this.cancelarEdicao();
+        if (this.equipamentoEmEdicao()?.id === id) {
+          this.fecharModal();
         }
         this.carregarEquipamentos();
       },
       error: (err) => {
-        this.erro.set(err?.error?.message || 'Erro ao excluir equipamento.');
+        this.erro.set(extrairMensagemErro(err, 'Erro ao excluir equipamento.'));
       }
     });
-  }
-
-  rotuloConservacao(valor: string): string {
-    const mapa: Record<string, string> = {
-      NOVO: 'Novo',
-      BOM: 'Bom',
-      NECESSITA_MANUTENCAO: 'Necessita manutenção'
-    };
-    return mapa[valor] || valor;
-  }
-
-  rotuloStatus(valor: string): string {
-    const mapa: Record<string, string> = {
-      DISPONIVEL: 'Disponível',
-      EMPRESTADO: 'Emprestado',
-      MANUTENCAO: 'Manutenção'
-    };
-    return mapa[valor] || valor;
   }
 }
