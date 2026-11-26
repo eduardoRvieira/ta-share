@@ -1,4 +1,4 @@
-<section aria-labelledby="titulo-usuarios" class="p-6 sm:p-8 max-w-7xl w-full mx-auto space-y-6">
+<section aria-labelledby="titulo-usuarios" class="p-4 sm:p-8 max-w-7xl w-full mx-auto space-y-6">
 
   <!-- Cabeçalho da Página + Botão + Novo usuário (apenas ADMIN) -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -13,7 +13,7 @@
 
     @if (ehAdmin()) {
       <button type="button" (click)="abrirNovo()"
-        class="btn-primary inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors cursor-pointer shrink-0">
+        class="btn-primary self-start sm:self-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm transition-colors cursor-pointer shrink-0">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -23,7 +23,7 @@
   </div>
 
   <!-- Barra de Filtros -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 max-w-3xl">
     <div>
       <label for="busca-usuario" class="block text-xs font-bold text-main mb-1.5">
         Buscar usuário
@@ -74,12 +74,12 @@
 
   <!-- Alerta de Erro -->
   @if (erro()) {
-    <div role="alert" class="p-3.5 rounded-lg bg-rose-500/15 border border-rose-500 text-rose-500 text-sm font-medium">
+    <div role="alert" class="p-3.5 rounded-lg bg-rose-500/15 border border-rose-500 text-rose-500 text-sm font-medium wrap-break-word">
       {{ erro() }}
     </div>
   }
 
-  <!-- Tabela / Listagem -->
+  <!-- Listagem Responsiva -->
   <section aria-labelledby="titulo-lista-usuarios">
     <h3 id="titulo-lista-usuarios" class="sr-only">Usuários cadastrados</h3>
 
@@ -92,7 +92,99 @@
         Nenhum usuário encontrado.
       </div>
     } @else {
-      <div class="bg-surface border border-app rounded-xl overflow-visible">
+
+      <!-- VERSÃO MOBILE: Cards idênticos ao layout de referência (< md) -->
+      <div class="md:hidden space-y-3">
+        @for (usuario of usuariosFiltrados(); track usuario.id) {
+          <article class="bg-surface border border-app rounded-xl p-4 relative">
+            <div class="flex items-start justify-between gap-3">
+              
+              <!-- Avatar + Bloco de informações -->
+              <div class="flex items-start gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                  {{ iniciais(usuario.nome) }}
+                </div>
+
+                <div class="min-w-0 space-y-1">
+                  <p class="font-bold text-sm text-main leading-snug wrap-break-word">
+                    {{ usuario.nome }}
+                    @if (ehProprioUsuario(usuario)) {
+                      <span class="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 align-middle">Você</span>
+                    }
+                  </p>
+
+                  <p class="text-xs text-muted break-all">
+                    {{ usuario.email }}
+                  </p>
+
+                  <p class="font-mono text-xs text-muted">
+                    {{ documentoFormatado(usuario) }}
+                  </p>
+
+                  <!-- Badge de Perfil + Tipo de pessoa na base do card -->
+                  <div class="flex flex-wrap items-center gap-2 pt-1.5">
+                    @switch (usuario.perfil) {
+                      @case ('ADMIN') {
+                        <span class="btn-primary inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                          Administrador
+                        </span>
+                      }
+                      @case ('PROFISSIONAL') {
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                          Profissional
+                        </span>
+                      }
+                      @default {
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-500/15 text-muted border border-slate-500/30">
+                          {{ rotuloPerfil(usuario.perfil) }}
+                        </span>
+                      }
+                    }
+
+                    <span class="text-xs text-muted">
+                      {{ ehPessoaJuridica(usuario) ? 'Pessoa jurídica' : 'Pessoa física' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Menu de 3 pontinhos no canto superior direito -->
+              @if (podeGerenciar(usuario)) {
+                <div class="relative shrink-0">
+                  <button type="button" (click)="alternarMenuLinha(usuario.id)"
+                    [attr.aria-label]="'Ações para ' + usuario.nome"
+                    class="p-1.5 rounded-lg text-muted hover:text-main hover:bg-slate-500/10 transition-colors cursor-pointer">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="5" r="1.75" />
+                      <circle cx="12" cy="12" r="1.75" />
+                      <circle cx="12" cy="19" r="1.75" />
+                    </svg>
+                  </button>
+
+                  @if (menuAbertoId() === usuario.id) {
+                    <div [class]="($last ? 'bottom-full mb-1' : 'mt-1') + ' absolute right-0 w-36 rounded-xl bg-surface border border-app shadow-xl py-1 z-50 text-left'">
+                      <button type="button" (click)="iniciarEdicao(usuario)"
+                        class="w-full px-3.5 py-2 text-xs font-medium text-main hover:bg-slate-500/10 flex items-center gap-2 cursor-pointer">
+                        Editar
+                      </button>
+                      @if (podeExcluir(usuario)) {
+                        <button type="button" (click)="excluir(usuario)"
+                          class="w-full px-3.5 py-2 text-xs font-medium text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 cursor-pointer">
+                          Excluir
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+            </div>
+          </article>
+        }
+      </div>
+
+      <!-- VERSÃO DESKTOP: Tabela (>= md) -->
+      <div class="hidden md:block bg-surface border border-app rounded-xl overflow-visible">
         <div class="w-full">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -213,131 +305,136 @@
 
   <!-- MODAL DE NOVO / EDITAR USUÁRIO -->
   @if (modalAberto()) {
-    <div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-4 overflow-y-auto">
       <section aria-labelledby="titulo-form-usuario"
-        class="bg-surface border border-app rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5">
+        class="bg-surface border-t sm:border border-app rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg min-h-[92vh] sm:min-h-0 max-h-[95vh] overflow-y-auto p-5 sm:p-6 shadow-2xl flex flex-col justify-between space-y-5">
         
-        <!-- Cabeçalho do Modal -->
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <h3 id="titulo-form-usuario" class="text-lg font-bold text-main leading-tight">
-              {{ editandoId() !== null ? 'Editar usuário' : 'Novo usuário' }}
-            </h3>
-            <p class="text-xs text-muted mt-1">
-              Campos marcados com <span class="text-rose-500 font-bold">*</span> são obrigatórios.
-            </p>
+        <div class="space-y-5">
+          <!-- Cabeçalho do Modal (centralizado no mobile, alinhado à esquerda no desktop) -->
+          <div class="relative flex items-start justify-center sm:justify-between gap-4 pt-1 sm:pt-0">
+            <div class="text-center sm:text-left px-7 sm:px-0">
+              <h3 id="titulo-form-usuario" class="text-lg font-bold text-main leading-tight">
+                {{ editandoId() !== null ? 'Editar usuário' : 'Novo usuário' }}
+              </h3>
+              <p class="text-xs text-muted mt-1">
+                Campos marcados com <span class="text-rose-500 font-bold">*</span> são obrigatórios.
+              </p>
+            </div>
+            <button type="button" (click)="cancelarEdicao()" aria-label="Fechar janela"
+              class="absolute right-0 top-0 sm:static p-1.5 rounded-lg text-muted hover:text-main transition-colors cursor-pointer shrink-0">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <button type="button" (click)="cancelarEdicao()" aria-label="Fechar janela"
-            class="p-1.5 rounded-lg text-muted hover:text-main transition-colors cursor-pointer shrink-0">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+
+          <form #formUsuario="ngForm" (ngSubmit)="salvar()" class="space-y-4">
+            
+            <!-- Tipo de pessoa (2 colunas lado a lado também no mobile) -->
+            <div>
+              <span class="block text-xs font-bold text-main mb-1.5">
+                Tipo de pessoa <span class="text-rose-500">*</span>
+              </span>
+              <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <label [class]="tipoPessoa === 'PF'
+                  ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
+                  : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
+                  <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+                  <span class="truncate">Pessoa física</span>
+                </label>
+                <label [class]="tipoPessoa === 'PJ'
+                  ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
+                  : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
+                  <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+                  <span class="truncate">Pessoa jurídica</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Nome completo / Razão social -->
+            <div>
+              <label for="nome-usuario" class="block text-xs font-bold text-main mb-1.5">
+                {{ tipoPessoa === 'PF' ? 'Nome completo' : 'Razão social' }} <span class="text-rose-500">*</span>
+              </label>
+              <input id="nome-usuario" name="nome" type="text" [(ngModel)]="nome" required
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+            </div>
+
+            <!-- CPF/CNPJ + Telefone -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="cpf-usuario" class="block text-xs font-bold text-main mb-1.5">
+                  {{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }} <span class="text-rose-500">*</span>
+                </label>
+                <input id="cpf-usuario" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="formatarDocumento($event)"
+                  [required]="editandoId() === null"
+                  [placeholder]="tipoPessoa === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'"
+                  class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm font-mono transition-colors">
+                <p class="text-[11px] text-muted mt-1">Digite só os números; a pontuação é automática.</p>
+              </div>
+
+              <div>
+                <label for="telefone-usuario" class="block text-xs font-bold text-main mb-1.5">
+                  Telefone
+                </label>
+                <input id="telefone-usuario" name="telefone" type="tel" [(ngModel)]="telefone" (ngModelChange)="formatarTelefone($event)"
+                  placeholder="(00) 00000-0000"
+                  class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+                <p class="text-[11px] text-muted mt-1">Com DDD.</p>
+              </div>
+            </div>
+
+            <!-- E-mail -->
+            <div>
+              <label for="email-usuario" class="block text-xs font-bold text-main mb-1.5">
+                E-mail <span class="text-rose-500">*</span>
+              </label>
+              <input id="email-usuario" name="email" type="email" [(ngModel)]="email" required email
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+            </div>
+
+            <!-- Perfil + Senha -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label for="perfil-usuario" class="block text-xs font-bold text-main mb-1.5">
+                  Perfil <span class="text-rose-500">*</span>
+                </label>
+                <select id="perfil-usuario" name="perfil" [(ngModel)]="perfil" required
+                  [disabled]="!ehAdmin()"
+                  class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <option value="BENEFICIARIO">Beneficiário</option>
+                  <option value="PROFISSIONAL">Profissional</option>
+                  <option value="ADMIN">Administrador</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="senha-usuario" class="block text-xs font-bold text-main mb-1.5">
+                  Senha
+                  @if (editandoId() === null) {
+                    <span class="text-rose-500">*</span>
+                  }
+                </label>
+                <input id="senha-usuario" name="senha" type="password" [(ngModel)]="senha"
+                  [required]="editandoId() === null"
+                  [placeholder]="editandoId() !== null ? 'Deixe em branco para manter' : ''"
+                  class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+              </div>
+            </div>
+
+            <!-- Botões de ação (empilhados em largura total no mobile, lado a lado no desktop) -->
+            <div class="flex flex-col sm:flex-row-reverse items-stretch sm:items-center justify-start gap-2.5 pt-2">
+              <button type="submit" [disabled]="formUsuario.invalid"
+                class="btn-primary w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg text-xs font-bold shadow-sm transition-all cursor-pointer">
+                Salvar
+              </button>
+              <button type="button" (click)="cancelarEdicao()"
+                class="w-full sm:w-auto px-4 py-2.5 sm:py-2 rounded-lg border border-app bg-app text-xs font-bold text-main hover:opacity-80 transition-opacity cursor-pointer">
+                Cancelar
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form #formUsuario="ngForm" (ngSubmit)="salvar()" class="space-y-4">
-          
-          <!-- Tipo de pessoa -->
-          <div>
-            <span class="block text-xs font-bold text-main mb-1.5">
-              Tipo de pessoa <span class="text-rose-500">*</span>
-            </span>
-            <div class="grid grid-cols-2 gap-3">
-              <label [class]="tipoPessoa === 'PF'
-                ? 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-bold ring-2 ring-current'
-                : 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
-                <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5">
-                Pessoa física
-              </label>
-              <label [class]="tipoPessoa === 'PJ'
-                ? 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-bold ring-2 ring-current'
-                : 'input-app flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
-                <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5">
-                Pessoa jurídica
-              </label>
-            </div>
-          </div>
-
-          <!-- Nome completo / Razão social -->
-          <div>
-            <label for="nome-usuario" class="block text-xs font-bold text-main mb-1.5">
-              {{ tipoPessoa === 'PF' ? 'Nome completo' : 'Razão social' }} <span class="text-rose-500">*</span>
-            </label>
-            <input id="nome-usuario" name="nome" type="text" [(ngModel)]="nome" required
-              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
-          </div>
-
-          <!-- CPF/CNPJ + Telefone (2 colunas) -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="cpf-usuario" class="block text-xs font-bold text-main mb-1.5">
-                {{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }} <span class="text-rose-500">*</span>
-              </label>
-              <input id="cpf-usuario" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="formatarDocumento($event)"
-                [required]="editandoId() === null"
-                [placeholder]="tipoPessoa === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'"
-                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
-              <p class="text-[11px] text-muted mt-1">Digite só os números; a pontuação é automática.</p>
-            </div>
-
-            <div>
-              <label for="telefone-usuario" class="block text-xs font-bold text-main mb-1.5">
-                Telefone
-              </label>
-              <input id="telefone-usuario" name="telefone" type="tel" [(ngModel)]="telefone" (ngModelChange)="formatarTelefone($event)"
-                placeholder="(00) 00000-0000"
-                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
-              <p class="text-[11px] text-muted mt-1">Com DDD.</p>
-            </div>
-          </div>
-
-          <!-- E-mail -->
-          <div>
-            <label for="email-usuario" class="block text-xs font-bold text-main mb-1.5">
-              E-mail <span class="text-rose-500">*</span>
-            </label>
-            <input id="email-usuario" name="email" type="email" [(ngModel)]="email" required email
-              class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
-          </div>
-
-          <!-- Perfil + Senha  -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label for="perfil-usuario" class="block text-xs font-bold text-main mb-1.5">
-                Perfil <span class="text-rose-500">*</span>
-              </label>
-              <select id="perfil-usuario" name="perfil" [(ngModel)]="perfil" required
-                [disabled]="!ehAdmin()"
-                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <option value="BENEFICIARIO">Beneficiário</option>
-                <option value="PROFISSIONAL">Profissional</option>
-                <option value="ADMIN">Administrador</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="senha-usuario" class="block text-xs font-bold text-main mb-1.5">
-                Senha @if (editandoId() === null) { <span class="text-rose-500">*</span> }
-              </label>
-              <input id="senha-usuario" name="senha" type="password" [(ngModel)]="senha"
-                [required]="editandoId() === null"
-                [placeholder]="editandoId() !== null ? 'Deixe em branco para manter' : ''"
-                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
-            </div>
-          </div>
-
-          <!-- Botões de ação -->
-          <div class="flex items-center justify-end gap-2.5 pt-2">
-            <button type="button" (click)="cancelarEdicao()"
-              class="px-4 py-2 rounded-lg border border-app bg-app text-xs font-bold text-main hover:opacity-80 transition-opacity cursor-pointer">
-              Cancelar
-            </button>
-            <button type="submit" [disabled]="formUsuario.invalid"
-              class="btn-primary px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-all cursor-pointer">
-              Salvar
-            </button>
-          </div>
-        </form>
 
       </section>
     </div>
