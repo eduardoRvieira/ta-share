@@ -5,11 +5,12 @@ import { CategoriaResponse } from '../../models/categoria.model';
 import { EquipamentoResponse } from '../../models/equipamento.model';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { CategoriaFormPayload, CategoriaModal } from './categoria-modal/categoria-modal';
+import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
 import { extrairMensagemErro } from '../../shared/utils/http-erro';
 
 @Component({
   selector: 'app-categorias',
-  imports: [PageHeader, CategoriaModal],
+  imports: [PageHeader, CategoriaModal, ConfirmModal],
   templateUrl: './categorias.html'
 })
 export class Categorias implements OnInit {
@@ -23,6 +24,7 @@ export class Categorias implements OnInit {
 
   protected readonly modalAberto = signal(false);
   protected readonly categoriaEmEdicao = signal<CategoriaResponse | null>(null);
+  protected readonly categoriaParaExcluir = signal<CategoriaResponse | null>(null);
 
   protected readonly contagemPorCategoria = computed(() => {
     const mapa: Record<number, number> = {};
@@ -95,13 +97,25 @@ export class Categorias implements OnInit {
     });
   }
 
-  excluir(id: number): void {
-    if (!confirm('Deseja realmente excluir esta categoria?')) return;
-
+  solicitarExclusao(categoria: CategoriaResponse): void {
     this.erro.set(null);
-    this.categoriaService.deletar(id).subscribe({
+    this.categoriaParaExcluir.set(categoria);
+  }
+
+  cancelarExclusao(): void {
+    this.categoriaParaExcluir.set(null);
+  }
+
+  confirmarExclusao(): void {
+    const alvo = this.categoriaParaExcluir();
+    if (!alvo) return;
+
+    this.categoriaParaExcluir.set(null);
+    this.erro.set(null);
+
+    this.categoriaService.deletar(alvo.id).subscribe({
       next: () => {
-        if (this.categoriaEmEdicao()?.id === id) {
+        if (this.categoriaEmEdicao()?.id === alvo.id) {
           this.fecharModal();
         }
         this.carregarCategorias();
