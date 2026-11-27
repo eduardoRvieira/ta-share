@@ -1,0 +1,26 @@
+<app-modal
+  [aberto]="aberto()"
+  [tituloId]="tituloId()"
+  largura="md"
+  [titulo]="titulo()"
+  [subtitulo]="subtitulo()"
+  (fechar)="cancelar.emit()">
+
+  <div class="space-y-5">
+    <p class="text-sm text-main leading-relaxed">
+      {{ mensagem() }}
+    </p>
+
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5">
+      <button type="button" (click)="cancelar.emit()"
+        class="w-full sm:w-auto px-4 py-2 rounded-lg border border-app bg-app text-xs font-bold text-main hover:opacity-80 transition-opacity cursor-pointer">
+        {{ textoCancelar() }}
+      </button>
+      <button type="button" (click)="confirmar.emit()"
+        class="w-full sm:w-auto px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-sm transition-colors cursor-pointer">
+        {{ textoConfirmar() }}
+      </button>
+    </div>
+  </div>
+
+</app-modal>
