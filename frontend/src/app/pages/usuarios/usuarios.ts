@@ -11,10 +11,11 @@ import { UsuarioFormPayload, UsuarioModal } from './usuario-modal/usuario-modal'
 import { correspondeBusca } from '../../shared/utils/busca';
 import { extrairMensagemErro } from '../../shared/utils/http-erro';
 import { ehCnpj, formatarDocumentoComRotulo, obterIniciais } from '../../shared/utils/formatadores';
+import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
 
 @Component({
   selector: 'app-usuarios',
-  imports: [FormsModule, PageHeader, ActionMenu, StatusBadge, SearchInput, UsuarioModal],
+  imports: [FormsModule, PageHeader, ActionMenu, StatusBadge, SearchInput, UsuarioModal, ConfirmModal],
   templateUrl: './usuarios.html'
 })
 export class Usuarios implements OnInit {
@@ -27,6 +28,7 @@ export class Usuarios implements OnInit {
 
   protected readonly modalAberto = signal(false);
   protected readonly usuarioEmEdicao = signal<UsuarioResponse | null>(null);
+  protected readonly usuarioParaExcluir = signal<UsuarioResponse | null>(null);
 
   protected readonly filtroBusca = signal('');
   protected readonly filtroPerfil = signal('');
@@ -35,6 +37,11 @@ export class Usuarios implements OnInit {
   protected readonly iniciais = obterIniciais;
   protected readonly ehPessoaJuridica = (u: UsuarioResponse) => ehCnpj((u as any).cpf);
   protected readonly documentoFormatado = (u: UsuarioResponse) => formatarDocumentoComRotulo((u as any).cpf);
+
+  protected readonly excluindoPropriaConta = computed(() => {
+    const alvo = this.usuarioParaExcluir();
+    return alvo !== null && this.ehProprioUsuario(alvo);
+  });
 
   protected readonly usuariosFiltrados = computed(() => {
     const termo = this.filtroBusca();
@@ -128,27 +135,35 @@ export class Usuarios implements OnInit {
     });
   }
 
-  excluir(usuario: UsuarioResponse): void {
+  solicitarExclusao(usuario: UsuarioResponse): void {
     if (!this.podeGerenciar(usuario)) {
       this.erro.set('Você não tem permissão para excluir outros usuários.');
       return;
     }
 
-    const propriaConta = this.ehProprioUsuario(usuario);
-    const mensagem = propriaConta
-      ? 'Deseja realmente excluir sua própria conta? Você será desconectado do sistema.'
-      : `Deseja realmente excluir o usuário ${usuario.nome}?`;
-
-    if (!confirm(mensagem)) return;
-
     this.erro.set(null);
-    this.usuarioService.deletar(usuario.id).subscribe({
+    this.usuarioParaExcluir.set(usuario);
+  }
+
+  cancelarExclusao(): void {
+    this.usuarioParaExcluir.set(null);
+  }
+
+  confirmarExclusao(): void {
+    const alvo = this.usuarioParaExcluir();
+    if (!alvo) return;
+
+    const propriaConta = this.ehProprioUsuario(alvo);
+    this.usuarioParaExcluir.set(null);
+    this.erro.set(null);
+
+    this.usuarioService.deletar(alvo.id).subscribe({
       next: () => {
         if (propriaConta) {
           this.auth.sair();
           return;
         }
-        if (this.usuarioEmEdicao()?.id === usuario.id) {
+        if (this.usuarioEmEdicao()?.id === alvo.id) {
           this.fecharModal();
         }
         this.carregarUsuarios();

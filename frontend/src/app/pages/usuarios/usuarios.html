@@ -103,7 +103,7 @@
                   [ariaLabel]="'Ações para ' + usuario.nome"
                   [abrirParaCima]="$last"
                   (editar)="iniciarEdicao(usuario)"
-                  (excluir)="excluir(usuario)" />
+                  (excluir)="solicitarExclusao(usuario)" />
               }
             </div>
           </article>
@@ -176,7 +176,7 @@
                         [ariaLabel]="'Ações para ' + usuario.nome"
                         [abrirParaCima]="$last"
                         (editar)="iniciarEdicao(usuario)"
-                        (excluir)="excluir(usuario)" />
+                        (excluir)="solicitarExclusao(usuario)" />
                     }
                   </td>
                 </tr>
@@ -194,5 +194,17 @@
     [ehAdmin]="auth.ehAdmin()"
     (fechar)="fecharModal()"
     (salvarFormulario)="salvar($event)" />
+
+  <app-confirm-modal
+    [aberto]="usuarioParaExcluir() !== null"
+    tituloId="titulo-excluir-usuario"
+    [titulo]="excluindoPropriaConta() ? 'Excluir minha conta' : 'Excluir usuário'"
+    [subtitulo]="excluindoPropriaConta() ? 'Esta ação é permanente e encerrará sua sessão.' : 'Esta ação não poderá ser desfeita.'"
+    [mensagem]="excluindoPropriaConta()
+      ? 'Deseja realmente excluir sua própria conta? Você será desconectado do sistema imediatamente.'
+      : 'Deseja realmente excluir o usuário ' + (usuarioParaExcluir()?.nome ?? '') + '?'"
+    [textoConfirmar]="excluindoPropriaConta() ? 'Excluir minha conta' : 'Excluir usuário'"
+    (confirmar)="confirmarExclusao()"
+    (cancelar)="cancelarExclusao()" />
 
 </section>
