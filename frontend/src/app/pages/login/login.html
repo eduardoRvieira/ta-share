@@ -43,7 +43,6 @@
 
       <!-- FORMULÁRIO DE LOGIN -->
       @if (!modoCadastro()) {
-        
         <form #formLogin="ngForm" (ngSubmit)="entrar()" class="space-y-4">
           <div>
             <label for="email" class="block text-xs font-bold text-main mb-1.5">
@@ -94,13 +93,13 @@
               <label [class]="tipoPessoa === 'PF'
                 ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
                 : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
-                <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+                <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="aoMudarTipoPessoa()" required class="w-3.5 h-3.5 shrink-0">
                 <span class="truncate">Pessoa física</span>
               </label>
               <label [class]="tipoPessoa === 'PJ'
                 ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
                 : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
-                <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+                <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="aoMudarTipoPessoa()" required class="w-3.5 h-3.5 shrink-0">
                 <span class="truncate">Pessoa jurídica</span>
               </label>
             </div>
@@ -150,12 +149,16 @@
               <label for="perfil-cadastro" class="block text-xs font-bold text-main mb-1.5">
                 Perfil <span class="text-rose-500">*</span>
               </label>
-              <select id="perfil-cadastro" name="perfil" [(ngModel)]="perfil" required
-                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
+              <select id="perfil-cadastro" name="perfil" [(ngModel)]="perfil" (ngModelChange)="aoMudarPerfil()" required
+                [disabled]="tipoPessoa === 'PJ'"
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
                 <option value="BENEFICIARIO">Beneficiário</option>
                 <option value="PROFISSIONAL">Profissional</option>
                 <option value="ADMIN">Administrador</option>
               </select>
+              @if (tipoPessoa === 'PJ') {
+                <p class="text-[11px] text-muted mt-1">Pessoa jurídica é classificada automaticamente como Profissional.</p>
+              }
             </div>
 
             <div>
@@ -167,6 +170,136 @@
               <p class="text-[11px] text-muted mt-1">Mínimo de 6 caracteres.</p>
             </div>
           </div>
+
+          <!-- BLOCO CONDICIONAL: PROFISSIONAL (apenas PF) -->
+          @if (perfil === 'PROFISSIONAL' && tipoPessoa === 'PF') {
+            <div class="p-4 rounded-xl bg-surface border border-app space-y-4">
+              <p class="text-xs font-bold text-main">Validação profissional (CFM)</p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="sm:col-span-2">
+                  <label for="crm-cadastro" class="block text-xs font-bold text-main mb-1.5">
+                    Número do CRM <span class="text-rose-500">*</span>
+                  </label>
+                  <input id="crm-cadastro" name="crm" type="text" [(ngModel)]="crm"
+                    placeholder="Ex.: 123456"
+                    class="input-app w-full rounded-lg px-3.5 py-2 text-sm font-mono transition-colors">
+                </div>
+
+                <div>
+                  <label for="uf-cadastro" class="block text-xs font-bold text-main mb-1.5">
+                    Estado (UF) <span class="text-rose-500">*</span>
+                  </label>
+                  <select id="uf-cadastro" name="estadoCrm" [(ngModel)]="estadoCrm"
+                    class="input-app w-full rounded-lg px-3 py-2 text-sm transition-colors">
+                    @for (uf of estados; track uf) {
+                      <option [value]="uf">{{ uf }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <!-- Anexo PDF do CFM -->
+              <div class="space-y-2.5">
+                <span class="block text-xs font-bold text-main">
+                  Documento / Certidão do CFM (.pdf) <span class="text-rose-500">*</span>
+                </span>
+
+                @if (documentoCfm(); as doc) {
+                  <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-blue-400/50 bg-blue-500/10 text-xs">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <div class="min-w-0">
+                        <p class="font-semibold text-main truncate">{{ doc.nome }}</p>
+                        <p class="text-[11px] text-muted mt-0.5">{{ doc.tamanhoFormatado }} · PDF anexado</p>
+                      </div>
+                    </div>
+                    <button type="button" (click)="documentoCfm.set(null)"
+                      class="text-[11px] font-bold text-rose-500 hover:underline shrink-0 cursor-pointer">
+                      Remover
+                    </button>
+                  </div>
+                }
+
+                <div>
+                  <label class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-app bg-app text-xs font-semibold text-main hover:opacity-80 transition-opacity cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    <span>{{ documentoCfm() ? 'Trocar arquivo PDF' : 'Anexar PDF do CFM' }}</span>
+                    <input type="file" accept=".pdf,application/pdf" (change)="selecionarPdf($event, 'CFM')" class="sr-only">
+                  </label>
+                  <p class="text-[11px] text-muted mt-1.5">Formato .pdf (máximo 10 MB).</p>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- BLOCO CONDICIONAL: BENEFICIÁRIO -->
+          @if (perfil === 'BENEFICIARIO') {
+            <div class="p-4 rounded-xl bg-surface border border-app space-y-4">
+              <div class="space-y-2.5">
+                <span class="block text-xs font-bold text-main">
+                  Como você pretende utilizar o TA Share? <span class="text-rose-500">*</span>
+                </span>
+
+                <div class="space-y-2.5">
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border border-app bg-app/50 cursor-pointer text-xs text-main">
+                    <input type="checkbox" name="querFazerDoacoes" [(ngModel)]="querFazerDoacoes" class="w-4 h-4 rounded shrink-0">
+                    <span>Quero apenas fazer doações</span>
+                  </label>
+
+                  <label class="flex items-center gap-2.5 p-3 rounded-xl border border-app bg-app/50 cursor-pointer text-xs text-main">
+                    <input type="checkbox" name="precisaReceberDoacoes" [(ngModel)]="precisaReceberDoacoes"
+                      (change)="aoAlternarReceberDoacoes()" class="w-4 h-4 rounded shrink-0">
+                    <span>Preciso receber doações</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Anexo PDF CadÚnico / Comprovante de Renda -->
+              @if (precisaReceberDoacoes) {
+                <div class="space-y-2.5">
+                  <span class="block text-xs font-bold text-main">
+                    CadÚnico ou Comprovante de Renda (.pdf) <span class="text-rose-500">*</span>
+                  </span>
+
+                  @if (documentoRenda(); as doc) {
+                    <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-xs">
+                      <div class="flex items-center gap-2.5 min-w-0">
+                        <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <div class="min-w-0">
+                          <p class="font-semibold text-main truncate">{{ doc.nome }}</p>
+                          <p class="text-[11px] text-muted mt-0.5">{{ doc.tamanhoFormatado }} · PDF anexado</p>
+                        </div>
+                      </div>
+                      <button type="button" (click)="documentoRenda.set(null)"
+                        class="text-[11px] font-bold text-rose-500 hover:underline shrink-0 cursor-pointer">
+                        Remover
+                      </button>
+                    </div>
+                  }
+
+                  <div>
+                    <label class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-app bg-app text-xs font-semibold text-main hover:opacity-80 transition-opacity cursor-pointer">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      <span>{{ documentoRenda() ? 'Trocar arquivo PDF' : 'Anexar CadÚnico ou Comprovante (.pdf)' }}</span>
+                      <input type="file" accept=".pdf,application/pdf" (change)="selecionarPdf($event, 'RENDA')" class="sr-only">
+                    </label>
+                    <p class="text-[11px] text-muted mt-1.5 leading-relaxed">
+                      Você pode anexar o CadÚnico, comprovante de renda ou um PDF único com ambos (máximo 10 MB).
+                    </p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
 
           <div class="pt-2">
             <button type="submit" [disabled]="enviando() || formCadastro.invalid"

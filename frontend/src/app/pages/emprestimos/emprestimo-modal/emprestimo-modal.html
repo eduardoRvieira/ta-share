@@ -13,7 +13,7 @@
       <select id="usuario-emprestimo" name="usuarioId" [(ngModel)]="usuarioId" required
         class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
         <option value="" disabled>Selecione o usuário</option>
-        @for (usuario of usuarios(); track usuario.id) {
+        @for (usuario of usuariosElegiveis(); track usuario.id) {
           <option [value]="usuario.id">{{ usuario.nome }}</option>
         }
       </select>

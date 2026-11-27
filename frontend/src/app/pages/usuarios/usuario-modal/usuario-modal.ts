@@ -58,8 +58,15 @@ export class UsuarioModal {
       this.senha = '';
       this.cpf = docExistente ? formatarDocumentoPorTipo(docExistente, this.tipoPessoa) : '';
       this.telefone = usuario.telefone ?? '';
-      this.perfil = usuario.perfil || 'BENEFICIARIO';
+      this.perfil = this.tipoPessoa === 'PJ' ? 'PROFISSIONAL' : (usuario.perfil || 'BENEFICIARIO');
     });
+  }
+
+  aoMudarTipoPessoa(): void {
+    this.cpf = '';
+    if (this.tipoPessoa === 'PJ') {
+      this.perfil = 'PROFISSIONAL';
+    }
   }
 
   formatarDocumento(valor: string): void {

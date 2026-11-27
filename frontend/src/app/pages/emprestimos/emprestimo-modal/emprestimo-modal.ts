@@ -37,6 +37,10 @@ export class EmprestimoModal {
   status = 'ATIVO';
   observacoes = '';
 
+  protected readonly usuariosElegiveis = computed(() =>
+    this.usuarios().filter((u) => u.perfil !== 'PROFISSIONAL')
+  );
+
   protected readonly equipamentosDisponiveis = computed(() => {
     const emp = this.emprestimoEmEdicao();
     return this.equipamentos().filter(

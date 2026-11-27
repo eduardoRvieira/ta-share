@@ -7,6 +7,12 @@ import { LayoutService } from '../../services/layout.service';
 import { AuthService } from '../../services/auth.service';
 import { formatarDocumentoPorTipo, formatarTelefoneBr } from '../../shared/utils/formatadores';
 import { extrairMensagemErro } from '../../shared/utils/http-erro';
+import {
+  ANEXO_CADUNICO_PADRAO,
+  ANEXO_CFM_PADRAO,
+  AnexoPdfSimulado,
+  validarArquivoPdf
+} from '../../shared/utils/anexo-simulado';
 
 export interface SessaoUsuario {
   id: number;
@@ -14,6 +20,12 @@ export interface SessaoUsuario {
   email: string;
   perfil: string;
 }
+
+export const ESTADOS_BR = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO',
+  'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI',
+  'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+];
 
 @Component({
   selector: 'app-login',
@@ -31,17 +43,28 @@ export class Login implements OnInit {
   protected readonly aviso = signal<string | null>(null);
   protected readonly enviando = signal(false);
   protected readonly modoCadastro = signal(false);
+  protected readonly estados = ESTADOS_BR;
 
   // Campos de login
   email = '';
   senha = '';
 
-  // Campos extras de cadastro
+  // Campos de cadastro
   tipoPessoa: 'PF' | 'PJ' = 'PF';
   nome = '';
   cpf = '';
   telefone = '';
   perfil = 'BENEFICIARIO';
+
+  // Campos estéticos: Profissional (apenas PF)
+  crm = '';
+  estadoCrm = 'SC';
+  documentoCfm = signal<AnexoPdfSimulado | null>({ ...ANEXO_CFM_PADRAO });
+
+  // Campos estéticos: Beneficiário
+  querFazerDoacoes = false;
+  precisaReceberDoacoes = false;
+  documentoRenda = signal<AnexoPdfSimulado | null>({ ...ANEXO_CADUNICO_PADRAO });
 
   ngOnInit(): void {
     const motivo = this.auth.motivoLogout();
@@ -55,6 +78,46 @@ export class Login implements OnInit {
     this.modoCadastro.update((v) => !v);
     this.erro.set(null);
     this.aviso.set(null);
+  }
+
+  aoMudarTipoPessoa(): void {
+    this.cpf = '';
+    if (this.tipoPessoa === 'PJ') {
+      this.perfil = 'PROFISSIONAL';
+    }
+  }
+
+  aoMudarPerfil(): void {
+    if (this.perfil === 'PROFISSIONAL' && this.tipoPessoa === 'PF' && !this.documentoCfm()) {
+      this.documentoCfm.set({ ...ANEXO_CFM_PADRAO });
+    }
+  }
+
+  aoAlternarReceberDoacoes(): void {
+    if (this.precisaReceberDoacoes && !this.documentoRenda()) {
+      this.documentoRenda.set({ ...ANEXO_CADUNICO_PADRAO });
+    }
+  }
+
+  selecionarPdf(event: Event, destino: 'CFM' | 'RENDA'): void {
+    const input = event.target as HTMLInputElement;
+    const arquivo = input.files?.[0];
+    if (!arquivo) return;
+
+    const resultado = validarArquivoPdf(arquivo);
+    if (resultado.erro) {
+      this.erro.set(resultado.erro);
+      input.value = '';
+      return;
+    }
+
+    this.erro.set(null);
+    if (destino === 'CFM') {
+      this.documentoCfm.set(resultado.anexo ?? null);
+    } else {
+      this.documentoRenda.set(resultado.anexo ?? null);
+    }
+    input.value = '';
   }
 
   formatarDocumento(valor: string): void {
@@ -113,6 +176,11 @@ export class Login implements OnInit {
         this.cpf = '';
         this.telefone = '';
         this.senha = '';
+        this.crm = '';
+        this.querFazerDoacoes = false;
+        this.precisaReceberDoacoes = false;
+        this.documentoCfm.set({ ...ANEXO_CFM_PADRAO });
+        this.documentoRenda.set({ ...ANEXO_CADUNICO_PADRAO });
         this.aviso.set('Conta criada com sucesso! Agora faça login com seu e-mail e senha.');
       },
       error: (err) => {
