@@ -117,7 +117,7 @@
                 [ariaLabel]="'Ações para ' + equipamento.nome"
                 [abrirParaCima]="$last"
                 (editar)="iniciarEdicao(equipamento)"
-                (excluir)="excluir(equipamento.id)" />
+                (excluir)="solicitarExclusao(equipamento)" />
             </div>
           </article>
         }
@@ -168,8 +168,7 @@
                       [ariaLabel]="'Ações para ' + equipamento.nome"
                       [abrirParaCima]="$last"
                       (editar)="iniciarEdicao(equipamento)"
-                      (excluir)="excluir(equipamento.id)" 
-                    />
+                      (excluir)="solicitarExclusao(equipamento)" />
                   </td>
                 </tr>
               }
@@ -185,7 +184,16 @@
     [equipamentoEmEdicao]="equipamentoEmEdicao()"
     [categorias]="categorias()"
     (fechar)="fecharModal()"
-    (salvarFormulario)="salvar($event)" 
-  />
+    (salvarFormulario)="salvar($event)" />
+
+  <app-confirm-modal
+    [aberto]="equipamentoParaExcluir() !== null"
+    tituloId="titulo-excluir-equipamento"
+    titulo="Excluir equipamento"
+    subtitulo="Esta ação não poderá ser desfeita."
+    [mensagem]="'Deseja realmente excluir o equipamento ' + (equipamentoParaExcluir()?.nome ?? '') + '?'"
+    textoConfirmar="Excluir equipamento"
+    (confirmar)="confirmarExclusao()"
+    (cancelar)="cancelarExclusao()" />
 
 </section>

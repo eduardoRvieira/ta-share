@@ -9,12 +9,13 @@ import { ActionMenu } from '../../shared/components/action-menu/action-menu';
 import { StatusBadge } from '../../shared/components/status-badge/status-badge';
 import { SearchInput } from '../../shared/components/search-input/search-input';
 import { EquipamentoFormPayload, EquipamentoModal } from './equipamento-modal/equipamento-modal';
+import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
 import { correspondeBusca } from '../../shared/utils/busca';
 import { extrairMensagemErro } from '../../shared/utils/http-erro';
 
 @Component({
   selector: 'app-equipamentos',
-  imports: [FormsModule, PageHeader, ActionMenu, StatusBadge, SearchInput, EquipamentoModal],
+  imports: [FormsModule, PageHeader, ActionMenu, StatusBadge, SearchInput, EquipamentoModal, ConfirmModal],
   templateUrl: './equipamentos.html'
 })
 export class Equipamentos implements OnInit {
@@ -28,6 +29,7 @@ export class Equipamentos implements OnInit {
 
   protected readonly modalAberto = signal(false);
   protected readonly equipamentoEmEdicao = signal<EquipamentoResponse | null>(null);
+  protected readonly equipamentoParaExcluir = signal<EquipamentoResponse | null>(null);
 
   protected readonly filtroBusca = signal('');
   protected readonly filtroCategoria = signal('');
@@ -113,13 +115,25 @@ export class Equipamentos implements OnInit {
     });
   }
 
-  excluir(id: number): void {
-    if (!confirm('Deseja realmente excluir este equipamento?')) return;
-
+  solicitarExclusao(equipamento: EquipamentoResponse): void {
     this.erro.set(null);
-    this.equipamentoService.deletar(id).subscribe({
+    this.equipamentoParaExcluir.set(equipamento);
+  }
+
+  cancelarExclusao(): void {
+    this.equipamentoParaExcluir.set(null);
+  }
+
+  confirmarExclusao(): void {
+    const alvo = this.equipamentoParaExcluir();
+    if (!alvo) return;
+
+    this.equipamentoParaExcluir.set(null);
+    this.erro.set(null);
+
+    this.equipamentoService.deletar(alvo.id).subscribe({
       next: () => {
-        if (this.equipamentoEmEdicao()?.id === id) {
+        if (this.equipamentoEmEdicao()?.id === alvo.id) {
           this.fecharModal();
         }
         this.carregarEquipamentos();
