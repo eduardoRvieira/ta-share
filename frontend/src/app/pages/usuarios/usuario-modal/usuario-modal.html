@@ -14,13 +14,13 @@
         <label [class]="tipoPessoa === 'PF'
           ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
           : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
-          <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+          <input type="radio" name="tipoPessoa" value="PF" [(ngModel)]="tipoPessoa" (change)="aoMudarTipoPessoa()" required class="w-3.5 h-3.5 shrink-0">
           <span class="truncate">Pessoa física</span>
         </label>
         <label [class]="tipoPessoa === 'PJ'
           ? 'flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-bold bg-blue-500/15 border border-blue-400 text-main'
           : 'input-app flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer text-xs font-medium opacity-80 hover:opacity-100'">
-          <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="cpf = ''" required class="w-3.5 h-3.5 shrink-0">
+          <input type="radio" name="tipoPessoa" value="PJ" [(ngModel)]="tipoPessoa" (change)="aoMudarTipoPessoa()" required class="w-3.5 h-3.5 shrink-0">
           <span class="truncate">Pessoa jurídica</span>
         </label>
       </div>
@@ -71,12 +71,15 @@
           Perfil <span class="text-rose-500">*</span>
         </label>
         <select id="perfil-usuario" name="perfil" [(ngModel)]="perfil" required
-          [disabled]="!ehAdmin()"
+          [disabled]="!ehAdmin() || tipoPessoa === 'PJ'"
           class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
           <option value="BENEFICIARIO">Beneficiário</option>
           <option value="PROFISSIONAL">Profissional</option>
           <option value="ADMIN">Administrador</option>
         </select>
+        @if (tipoPessoa === 'PJ') {
+          <p class="text-[11px] text-muted mt-1">PJ é classificada automaticamente como Profissional.</p>
+        }
       </div>
 
       <div>
