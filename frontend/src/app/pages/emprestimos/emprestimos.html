@@ -84,7 +84,7 @@
                 [ariaLabel]="'Mais ações para empréstimo de ' + emprestimo.equipamentoNome"
                 [abrirParaCima]="$last"
                 (editar)="iniciarEdicao(emprestimo)"
-                (excluir)="excluir(emprestimo.id)" />
+                (excluir)="solicitarExclusao(emprestimo)" />
             </div>
 
             <div class="flex flex-wrap items-center gap-2.5 text-xs">
@@ -181,7 +181,7 @@
                         [ariaLabel]="'Mais ações para empréstimo de ' + emprestimo.equipamentoNome"
                         [abrirParaCima]="$last"
                         (editar)="iniciarEdicao(emprestimo)"
-                        (excluir)="excluir(emprestimo.id)" />
+                        (excluir)="solicitarExclusao(emprestimo)" />
                     </div>
                   </td>
                 </tr>
@@ -200,5 +200,15 @@
     [equipamentos]="equipamentos()"
     (fechar)="fecharModal()"
     (salvarFormulario)="salvar($event)" />
+
+  <app-confirm-modal
+    [aberto]="emprestimoParaExcluir() !== null"
+    tituloId="titulo-excluir-emprestimo"
+    titulo="Excluir empréstimo"
+    subtitulo="Esta ação não poderá ser desfeita."
+    [mensagem]="'Deseja realmente excluir o empréstimo de ' + (emprestimoParaExcluir()?.equipamentoNome ?? 'este equipamento') + '?'"
+    textoConfirmar="Excluir empréstimo"
+    (confirmar)="confirmarExclusao()"
+    (cancelar)="cancelarExclusao()" />
 
 </section>

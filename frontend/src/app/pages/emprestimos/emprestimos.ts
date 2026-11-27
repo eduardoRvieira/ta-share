@@ -13,12 +13,13 @@ import { EmprestimoFormPayload, EmprestimoModal } from './emprestimo-modal/empre
 import { correspondeBusca } from '../../shared/utils/busca';
 import { extrairMensagemErro } from '../../shared/utils/http-erro';
 import { formatarDataIso, isEmprestimoConcluido } from '../../shared/utils/formatadores';
+import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
 
 type FiltroSituacao = 'TODOS' | 'ATIVO' | 'ATRASADO' | 'CONCLUIDO';
 
 @Component({
   selector: 'app-emprestimos',
-  imports: [PageHeader, ActionMenu, StatusBadge, SearchInput, EmprestimoModal],
+  imports: [PageHeader, ActionMenu, StatusBadge, SearchInput, EmprestimoModal, ConfirmModal],
   templateUrl: './emprestimos.html'
 })
 export class Emprestimos implements OnInit {
@@ -34,6 +35,7 @@ export class Emprestimos implements OnInit {
 
   protected readonly modalAberto = signal(false);
   protected readonly emprestimoEmEdicao = signal<EmprestimoResponse | null>(null);
+  protected readonly emprestimoParaExcluir = signal<EmprestimoResponse | null>(null);
 
   protected readonly filtroSituacao = signal<FiltroSituacao>('TODOS');
   protected readonly filtroBusca = signal('');
@@ -171,13 +173,25 @@ export class Emprestimos implements OnInit {
     });
   }
 
-  excluir(id: number): void {
-    if (!confirm('Deseja realmente excluir este empréstimo?')) return;
-
+  solicitarExclusao(emprestimo: EmprestimoResponse): void {
     this.erro.set(null);
-    this.emprestimoService.deletar(id).subscribe({
+    this.emprestimoParaExcluir.set(emprestimo);
+  }
+
+  cancelarExclusao(): void {
+    this.emprestimoParaExcluir.set(null);
+  }
+
+  confirmarExclusao(): void {
+    const alvo = this.emprestimoParaExcluir();
+    if (!alvo) return;
+
+    this.emprestimoParaExcluir.set(null);
+    this.erro.set(null);
+
+    this.emprestimoService.deletar(alvo.id).subscribe({
       next: () => {
-        if (this.emprestimoEmEdicao()?.id === id) {
+        if (this.emprestimoEmEdicao()?.id === alvo.id) {
           this.fecharModal();
         }
         this.carregarEmprestimos();
