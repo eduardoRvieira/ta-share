@@ -89,10 +89,18 @@
         @for (equipamento of equipamentosFiltrados(); track equipamento.id) {
           <article class="bg-surface border border-app rounded-xl p-4 relative">
             <div class="flex items-start justify-between gap-3">
+              
               <div class="min-w-0 space-y-1.5">
-                <p class="font-bold text-sm text-main leading-snug wrap-break-word">
-                  {{ equipamento.nome }}
-                </p>
+                <div>
+                  <p class="font-bold text-sm text-main leading-snug wrap-break-word">
+                    {{ equipamento.nome }}
+                  </p>
+                  @if (equipamento.descricao) {
+                    <p class="text-xs text-muted mt-0.5 line-clamp-2 wrap-break-word">
+                      {{ equipamento.descricao }}
+                    </p>
+                  }
+                </div>
 
                 <p class="text-xs text-muted">
                   <span class="font-mono">{{ equipamento.patrimonio }}</span> · {{ equipamento.categoriaNome }}
@@ -160,7 +168,8 @@
                       [ariaLabel]="'Ações para ' + equipamento.nome"
                       [abrirParaCima]="$last"
                       (editar)="iniciarEdicao(equipamento)"
-                      (excluir)="excluir(equipamento.id)" />
+                      (excluir)="excluir(equipamento.id)" 
+                    />
                   </td>
                 </tr>
               }
@@ -176,6 +185,7 @@
     [equipamentoEmEdicao]="equipamentoEmEdicao()"
     [categorias]="categorias()"
     (fechar)="fecharModal()"
-    (salvarFormulario)="salvar($event)" />
+    (salvarFormulario)="salvar($event)" 
+  />
 
 </section>

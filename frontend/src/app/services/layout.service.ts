@@ -4,7 +4,7 @@ import { filter } from 'rxjs';
 import { AuthService } from './auth.service';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class LayoutService {
   private readonly router = inject(Router);
@@ -12,7 +12,10 @@ export class LayoutService {
 
   readonly titulo = signal('TA.share');
   readonly naTelaLogin = signal(false);
-  readonly menuAberto = signal(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
+  readonly lendoPagina = signal(false);
+  readonly menuAberto = signal(
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : true
+  );
 
   readonly exibirAreaLogada = computed(() => this.auth.estaLogado() && !this.naTelaLogin());
 
@@ -37,6 +40,14 @@ export class LayoutService {
     }
   }
 
+  alternarLeitura(): void {
+    if (this.lendoPagina()) {
+      this.pararLeitura();
+      return;
+    }
+    this.lerPagina();
+  }
+
   lerPagina(): void {
     if (!('speechSynthesis' in window)) {
       alert('Seu navegador não suporta leitura em voz alta.');
@@ -58,6 +69,10 @@ export class LayoutService {
       utterance.voice = vozPt;
     }
 
+    utterance.onend = () => this.lendoPagina.set(false);
+    utterance.onerror = () => this.lendoPagina.set(false);
+
+    this.lendoPagina.set(true);
     window.speechSynthesis.speak(utterance);
   }
 
@@ -65,5 +80,6 @@ export class LayoutService {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
+    this.lendoPagina.set(false);
   }
 }
