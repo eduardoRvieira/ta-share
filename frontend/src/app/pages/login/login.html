@@ -85,6 +85,7 @@
         <!-- FORMULÁRIO DE CADASTRO -->
         <form #formCadastro="ngForm" (ngSubmit)="cadastrar()" class="space-y-4">
           
+          <!-- Tipo Pessoa -->
           <div>
             <span class="block text-xs font-bold text-main mb-1.5">
               Tipo de pessoa <span class="text-rose-500">*</span>
@@ -105,6 +106,7 @@
             </div>
           </div>
 
+          <!-- Nome -->
           <div>
             <label for="nome-cadastro" class="block text-xs font-bold text-main mb-1.5">
               {{ tipoPessoa === 'PF' ? 'Nome completo' : 'Razão social / Nome da instituição' }} <span class="text-rose-500">*</span>
@@ -114,28 +116,53 @@
               class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
           </div>
 
+          <!-- CPF / CNPJ -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label for="cpf-cadastro" class="block text-xs font-bold text-main mb-1.5">
-                {{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }} <span class="text-rose-500">*</span>
+                {{ tipoPessoa === 'PF' ? 'CPF' : 'CNPJ' }} 
+
+                <span class="text-rose-500">*</span>
               </label>
-              <input id="cpf-cadastro" name="cpf" type="text" [(ngModel)]="cpf" (ngModelChange)="formatarDocumento($event)" required
+
+              <input 
+                id="cpf-cadastro" 
+                name="cpf" 
+                type="text" 
+                [(ngModel)]="cpf" 
+                (ngModelChange)="formatarDocumento($event)" 
+                required
                 [placeholder]="tipoPessoa === 'PF' ? '123.456.789-89' : '12.345.678/0001-90'"
-                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm font-mono transition-colors">
-              <p class="text-[11px] text-muted mt-1">Só números; a pontuação é automática.</p>
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm font-mono transition-colors"
+              >
+
+              <p class="text-[11px] text-muted mt-1"> Só números; a pontuação é automática. </p>
             </div>
 
+            <!-- Telefone -->
             <div>
               <label for="telefone-cadastro" class="block text-xs font-bold text-main mb-1.5">
                 Telefone
+
+                <span class="text-rose-500">*</span>
               </label>
-              <input id="telefone-cadastro" name="telefone" type="tel" [(ngModel)]="telefone" (ngModelChange)="formatarTelefone($event)"
+
+              <input 
+                id="telefone-cadastro" 
+                name="telefone" type="tel" 
+                [(ngModel)]="telefone" 
+                (ngModelChange)="formatarTelefone($event)"
+                required
                 placeholder="(11) 98765-4321"
-                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors">
-              <p class="text-[11px] text-muted mt-1">Com DDD.</p>
+                class="input-app w-full rounded-lg px-3.5 py-2.5 text-sm transition-colors"
+              >
+
+              <p class="text-[11px] text-muted mt-1"> Com DDD. </p>
+
             </div>
           </div>
 
+          <!-- Email -->
           <div>
             <label for="email-cadastro" class="block text-xs font-bold text-main mb-1.5">
               E-mail <span class="text-rose-500">*</span>
@@ -161,6 +188,7 @@
               }
             </div>
 
+            <!-- Senha -->
             <div>
               <label for="senha-cadastro" class="block text-xs font-bold text-main mb-1.5">
                 Senha <span class="text-rose-500">*</span>
