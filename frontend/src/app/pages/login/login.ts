@@ -155,7 +155,7 @@ export class Login implements OnInit {
   }
 
   cadastrar(): void {
-    if (!this.nome.trim() || !this.email.trim() || !this.senha.trim() || !this.cpf.trim()) return;
+    if (!this.nome.trim() || !this.email.trim() || !this.senha.trim() || !this.cpf.trim() || !this.telefone.trim()) return;
 
     this.erro.set(null);
     this.aviso.set(null);
