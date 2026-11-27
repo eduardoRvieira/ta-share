@@ -11,3 +11,30 @@
 
   <app-footer />
 </div>
+
+<app-modal
+  [aberto]="auth.modalSairAberto()"
+  tituloId="titulo-confirmar-saida"
+  largura="md"
+  titulo="Sair da conta"
+  subtitulo="Sua sessão atual será encerrada neste navegador."
+  (fechar)="auth.cancelarSaida()">
+
+  <div class="space-y-5">
+    <p class="text-sm text-main leading-relaxed">
+      Deseja realmente sair do <strong class="font-bold">TA.share</strong>?
+    </p>
+
+    <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5">
+      <button type="button" (click)="auth.cancelarSaida()"
+        class="w-full sm:w-auto px-4 py-2 rounded-lg border border-app bg-app text-xs font-bold text-main hover:opacity-80 transition-opacity cursor-pointer">
+        Cancelar
+      </button>
+      <button type="button" (click)="auth.sair()"
+        class="w-full sm:w-auto px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-sm transition-colors cursor-pointer">
+        Sair da conta
+      </button>
+    </div>
+  </div>
+
+</app-modal>
