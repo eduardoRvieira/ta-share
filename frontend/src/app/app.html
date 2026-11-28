@@ -20,6 +20,34 @@
   mensagem="Deseja realmente sair do TA.share?"
   textoConfirmar="Sair da conta"
   (confirmar)="auth.sair()"
-  (cancelar)="auth.cancelarSaida()" 
-  
-/>
+  (cancelar)="auth.cancelarSaida()" />
+
+@if (pendenciaEmprestimo(); as pendencia) {
+  <app-modal
+    [aberto]="true"
+    tituloId="titulo-confirmacao-aluguel"
+    largura="md"
+    titulo="Confirmação de empréstimo"
+    subtitulo="Um equipamento foi vinculado à sua conta."
+    (fechar)="confirmarAluguelPendente()">
+
+    <div class="space-y-5">
+      <p class="text-sm text-main leading-relaxed">
+        Você quer alugar um <strong class="font-bold">{{ pendencia.equipamentoNome }}</strong> de
+        <strong class="font-bold">{{ pendencia.ofertanteNome }}</strong>?
+      </p>
+
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-2.5">
+        <button type="button" (click)="recusarAluguelPendente()"
+          class="w-full sm:w-auto px-4 py-2 rounded-lg border border-rose-500/40 bg-rose-500/10 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer">
+          Não reconheço (Recusar)
+        </button>
+        <button type="button" (click)="confirmarAluguelPendente()"
+          class="btn-primary w-full sm:w-auto px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors cursor-pointer">
+          Sim, confirmar empréstimo
+        </button>
+      </div>
+    </div>
+
+  </app-modal>
+}

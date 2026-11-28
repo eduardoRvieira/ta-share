@@ -13,7 +13,7 @@
     <app-search-input
       inputId="busca-usuario"
       label="Buscar usuário"
-      placeholder="Nome, e-mail, CPF ou CNPJ"
+      [placeholder]="auth.ehAdmin() ? 'Nome, e-mail, CPF ou CNPJ' : 'Nome ou e-mail'"
       [(valor)]="filtroBusca" />
 
     <div>
@@ -86,7 +86,9 @@
                     }
                   </p>
                   <p class="text-xs text-muted break-all">{{ usuario.email }}</p>
-                  <p class="font-mono text-xs text-muted">{{ documentoFormatado(usuario) }}</p>
+                  @if (auth.ehAdmin()) {
+                    <p class="font-mono text-xs text-muted">{{ documentoFormatado(usuario) }}</p>
+                  }
 
                   <div class="flex flex-wrap items-center gap-2 pt-1.5">
                     <app-status-badge tipo="perfil" [valor]="usuario.perfil" [compacto]="true" />
@@ -117,7 +119,9 @@
             <thead>
               <tr class="border-b border-app text-xs font-semibold text-muted">
                 <th class="py-3.5 px-4">Nome</th>
-                <th class="py-3.5 px-4">Documento</th>
+                @if (auth.ehAdmin()) {
+                  <th class="py-3.5 px-4">Documento</th>
+                }
                 <th class="py-3.5 px-4">Contato</th>
                 <th class="py-3.5 px-4">Perfil</th>
                 <th class="py-3.5 px-4 w-12 text-right"><span class="sr-only">Ações</span></th>
@@ -145,9 +149,11 @@
                     </div>
                   </td>
 
-                  <td class="py-3.5 px-4 font-mono text-xs text-main whitespace-nowrap">
-                    {{ documentoFormatado(usuario) }}
-                  </td>
+                  @if (auth.ehAdmin()) {
+                    <td class="py-3.5 px-4 font-mono text-xs text-main whitespace-nowrap">
+                      {{ documentoFormatado(usuario) }}
+                    </td>
+                  }
 
                   <td class="py-3.5 px-4 text-xs">
                     <div class="flex items-center gap-1.5 text-main">

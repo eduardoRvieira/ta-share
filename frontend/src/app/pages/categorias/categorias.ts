@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CategoriaService } from '../../services/categoria.service';
 import { EquipamentoService } from '../../services/equipamento.service';
+import { AuthService } from '../../services/auth.service';
 import { CategoriaResponse } from '../../models/categoria.model';
 import { EquipamentoResponse } from '../../models/equipamento.model';
 import { PageHeader } from '../../shared/components/page-header/page-header';
@@ -16,6 +17,7 @@ import { extrairMensagemErro } from '../../shared/utils/http-erro';
 export class Categorias implements OnInit {
   private readonly categoriaService = inject(CategoriaService);
   private readonly equipamentoService = inject(EquipamentoService);
+  protected readonly auth = inject(AuthService);
 
   protected readonly categorias = signal<CategoriaResponse[]>([]);
   protected readonly equipamentos = signal<EquipamentoResponse[]>([]);
@@ -63,12 +65,14 @@ export class Categorias implements OnInit {
   }
 
   abrirNova(): void {
+    if (!this.auth.ehAdmin()) return;
     this.categoriaEmEdicao.set(null);
     this.erro.set(null);
     this.modalAberto.set(true);
   }
 
   iniciarEdicao(categoria: CategoriaResponse): void {
+    if (!this.auth.ehAdmin()) return;
     this.categoriaEmEdicao.set(categoria);
     this.erro.set(null);
     this.modalAberto.set(true);
@@ -80,6 +84,8 @@ export class Categorias implements OnInit {
   }
 
   salvar({ id, payload }: { id: number | null; payload: CategoriaFormPayload }): void {
+    if (!this.auth.ehAdmin()) return;
+
     this.erro.set(null);
     const requisicao = id !== null
       ? this.categoriaService.atualizar(id, payload)
@@ -98,6 +104,7 @@ export class Categorias implements OnInit {
   }
 
   solicitarExclusao(categoria: CategoriaResponse): void {
+    if (!this.auth.ehAdmin()) return;
     this.erro.set(null);
     this.categoriaParaExcluir.set(categoria);
   }
@@ -107,6 +114,7 @@ export class Categorias implements OnInit {
   }
 
   confirmarExclusao(): void {
+    if (!this.auth.ehAdmin()) return;
     const alvo = this.categoriaParaExcluir();
     if (!alvo) return;
 
