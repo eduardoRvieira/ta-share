@@ -1,7 +1,11 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { UsuarioService } from '../../services/usuario.service';
+import { EquipamentoService } from '../../services/equipamento.service';
+import { EmprestimoService } from '../../services/emprestimo.service';
 import { AuthService } from '../../services/auth.service';
+import { RegistroLocalService } from '../../services/registro-local.service';
 import { UsuarioResponse } from '../../models/usuario.model';
 import { PageHeader } from '../../shared/components/page-header/page-header';
 import { ActionMenu } from '../../shared/components/action-menu/action-menu';
@@ -10,7 +14,7 @@ import { SearchInput } from '../../shared/components/search-input/search-input';
 import { UsuarioFormPayload, UsuarioModal } from './usuario-modal/usuario-modal';
 import { correspondeBusca } from '../../shared/utils/busca';
 import { extrairMensagemErro } from '../../shared/utils/http-erro';
-import { ehCnpj, formatarDocumentoComRotulo, obterIniciais } from '../../shared/utils/formatadores';
+import { ehCnpj, formatarDocumentoComRotulo, isEmprestimoConcluido, obterIniciais } from '../../shared/utils/formatadores';
 import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-modal';
 
 @Component({
@@ -20,6 +24,9 @@ import { ConfirmModal } from '../../shared/components/confirm-modal/confirm-moda
 })
 export class Usuarios implements OnInit {
   private readonly usuarioService = inject(UsuarioService);
+  private readonly equipamentoService = inject(EquipamentoService);
+  private readonly emprestimoService = inject(EmprestimoService);
+  private readonly registroLocal = inject(RegistroLocalService);
   protected readonly auth = inject(AuthService);
 
   protected readonly usuarios = signal<UsuarioResponse[]>([]);
@@ -142,7 +149,49 @@ export class Usuarios implements OnInit {
     }
 
     this.erro.set(null);
-    this.usuarioParaExcluir.set(usuario);
+
+    forkJoin({
+      equipamentos: this.equipamentoService.listar(),
+      emprestimos: this.emprestimoService.listar()
+    }).subscribe({
+      next: ({ equipamentos, emprestimos }) => {
+        const propriaConta = this.ehProprioUsuario(usuario);
+
+        const possuiEquipamentos = equipamentos.some(
+          (eq) => this.registroLocal.obterDonoEquipamento(eq.id)?.usuarioId === usuario.id
+        );
+
+        if (possuiEquipamentos) {
+          this.erro.set(
+            propriaConta
+              ? 'Não é possível excluir sua conta porque existem equipamentos cadastrados por você. Exclua-os antes de encerrar a conta.'
+              : `Não é possível excluir ${usuario.nome} porque existem equipamentos cadastrados por este usuário.`
+          );
+          return;
+        }
+
+        const possuiEmprestimosAbertos = emprestimos.some((emp) => {
+          if (isEmprestimoConcluido(emp.status)) return false;
+          const ehRecebedor = emp.usuarioId === usuario.id;
+          const ehOfertante = this.registroLocal.obterDonoEmprestimo(emp.id)?.usuarioId === usuario.id;
+          return ehRecebedor || ehOfertante;
+        });
+
+        if (possuiEmprestimosAbertos) {
+          this.erro.set(
+            propriaConta
+              ? 'Não é possível excluir sua conta porque existem empréstimos em andamento vinculados a você. Encerre ou exclua-os primeiro.'
+              : `Não é possível excluir ${usuario.nome} porque existem empréstimos em andamento vinculados a este usuário.`
+          );
+          return;
+        }
+
+        this.usuarioParaExcluir.set(usuario);
+      },
+      error: () => {
+        this.usuarioParaExcluir.set(usuario);
+      }
+    });
   }
 
   cancelarExclusao(): void {
