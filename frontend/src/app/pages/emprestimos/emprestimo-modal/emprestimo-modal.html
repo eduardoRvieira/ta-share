@@ -32,6 +32,11 @@
           </option>
         }
       </select>
+      @if (!auth.ehAdmin() && equipamentosDisponiveis().length === 0) {
+        <p class="text-[11px] text-muted mt-1">
+          Você só pode emprestar equipamentos disponíveis cadastrados por você.
+        </p>
+      }
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

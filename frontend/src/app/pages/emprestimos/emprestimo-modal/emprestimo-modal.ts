@@ -1,8 +1,10 @@
-import { Component, computed, effect, input, output } from '@angular/core';
+import { Component, computed, effect, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EmprestimoResponse } from '../../../models/emprestimo.model';
 import { UsuarioResponse } from '../../../models/usuario.model';
 import { EquipamentoResponse } from '../../../models/equipamento.model';
+import { AuthService } from '../../../services/auth.service';
+import { RegistroLocalService } from '../../../services/registro-local.service';
 import { Modal } from '../../../shared/components/modal/modal';
 import { FormActions } from '../../../shared/components/form-actions/form-actions';
 
@@ -22,6 +24,9 @@ export interface EmprestimoFormPayload {
   templateUrl: './emprestimo-modal.html'
 })
 export class EmprestimoModal {
+  protected readonly auth = inject(AuthService);
+  private readonly registroLocal = inject(RegistroLocalService);
+
   readonly aberto = input(false);
   readonly emprestimoEmEdicao = input<EmprestimoResponse | null>(null);
   readonly usuarios = input<UsuarioResponse[]>([]);
@@ -37,15 +42,23 @@ export class EmprestimoModal {
   status = 'ATIVO';
   observacoes = '';
 
-  protected readonly usuariosElegiveis = computed(() =>
-    this.usuarios().filter((u) => u.perfil !== 'PROFISSIONAL')
-  );
+  protected readonly usuariosElegiveis = computed(() => {
+    const idLogado = this.auth.usuario()?.id;
+    return this.usuarios().filter(
+      (u) => u.perfil !== 'PROFISSIONAL' && u.id !== idLogado
+    );
+  });
 
   protected readonly equipamentosDisponiveis = computed(() => {
     const emp = this.emprestimoEmEdicao();
-    return this.equipamentos().filter(
-      (eq) => eq.statusItem === 'DISPONIVEL' || (emp !== null && eq.id === emp.equipamentoId)
-    );
+    const apenasDoCriador = !this.auth.ehAdmin();
+
+    return this.equipamentos().filter((eq) => {
+      if (emp !== null && eq.id === emp.equipamentoId) return true;
+      if (eq.statusItem !== 'DISPONIVEL') return false;
+      if (apenasDoCriador && !this.registroLocal.ehDonoEquipamento(eq.id)) return false;
+      return true;
+    });
   });
 
   constructor() {
