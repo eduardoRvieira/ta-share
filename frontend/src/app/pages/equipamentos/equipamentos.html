@@ -106,18 +106,24 @@
                   <span class="font-mono">{{ equipamento.patrimonio }}</span> · {{ equipamento.categoriaNome }}
                 </p>
 
+                <p class="text-[11px] text-muted">
+                  Cadastrado por <span class="font-semibold text-main">{{ nomeCriador(equipamento) }}</span>
+                </p>
+
                 <div class="flex flex-wrap items-center gap-2 pt-1">
                   <app-status-badge tipo="status-equipamento" [valor]="equipamento.statusItem" [compacto]="true" />
                   <app-status-badge tipo="conservacao" [valor]="equipamento.estadoConservacao" [compacto]="true" />
                 </div>
               </div>
 
-              <app-action-menu
-                class="shrink-0"
-                [ariaLabel]="'Ações para ' + equipamento.nome"
-                [abrirParaCima]="$last"
-                (editar)="iniciarEdicao(equipamento)"
-                (excluir)="solicitarExclusao(equipamento)" />
+              @if (podeGerenciar(equipamento)) {
+                <app-action-menu
+                  class="shrink-0"
+                  [ariaLabel]="'Ações para ' + equipamento.nome"
+                  [abrirParaCima]="$last"
+                  (editar)="iniciarEdicao(equipamento)"
+                  (excluir)="solicitarExclusao(equipamento)" />
+              }
             </div>
           </article>
         }
@@ -145,6 +151,9 @@
                     @if (equipamento.descricao) {
                       <p class="text-xs text-muted mt-0.5 line-clamp-1">{{ equipamento.descricao }}</p>
                     }
+                    <p class="text-[11px] text-muted mt-1">
+                      Cadastrado por <span class="font-semibold text-main">{{ nomeCriador(equipamento) }}</span>
+                    </p>
                   </td>
 
                   <td class="py-3.5 px-4 font-mono text-xs text-main whitespace-nowrap">
@@ -164,11 +173,13 @@
                   </td>
 
                   <td class="py-3.5 px-4 text-right relative">
-                    <app-action-menu
-                      [ariaLabel]="'Ações para ' + equipamento.nome"
-                      [abrirParaCima]="$last"
-                      (editar)="iniciarEdicao(equipamento)"
-                      (excluir)="solicitarExclusao(equipamento)" />
+                    @if (podeGerenciar(equipamento)) {
+                      <app-action-menu
+                        [ariaLabel]="'Ações para ' + equipamento.nome"
+                        [abrirParaCima]="$last"
+                        (editar)="iniciarEdicao(equipamento)"
+                        (excluir)="solicitarExclusao(equipamento)" />
+                    }
                   </td>
                 </tr>
               }

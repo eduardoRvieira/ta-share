@@ -2,6 +2,8 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EquipamentoService } from '../../services/equipamento.service';
 import { CategoriaService } from '../../services/categoria.service';
+import { EmprestimoService } from '../../services/emprestimo.service';
+import { RegistroLocalService } from '../../services/registro-local.service';
 import { EquipamentoResponse } from '../../models/equipamento.model';
 import { CategoriaResponse } from '../../models/categoria.model';
 import { PageHeader } from '../../shared/components/page-header/page-header';
@@ -21,6 +23,8 @@ import { extrairMensagemErro } from '../../shared/utils/http-erro';
 export class Equipamentos implements OnInit {
   private readonly equipamentoService = inject(EquipamentoService);
   private readonly categoriaService = inject(CategoriaService);
+  private readonly emprestimoService = inject(EmprestimoService);
+  protected readonly registroLocal = inject(RegistroLocalService);
 
   protected readonly equipamentos = signal<EquipamentoResponse[]>([]);
   protected readonly categorias = signal<CategoriaResponse[]>([]);
@@ -57,6 +61,14 @@ export class Equipamentos implements OnInit {
     this.carregarEquipamentos();
   }
 
+  podeGerenciar(equipamento: EquipamentoResponse): boolean {
+    return this.registroLocal.podeGerenciarEquipamento(equipamento.id);
+  }
+
+  nomeCriador(equipamento: EquipamentoResponse): string {
+    return this.registroLocal.obterNomeCriadorEquipamento(equipamento.id);
+  }
+
   carregarCategorias(): void {
     this.categoriaService.listar().subscribe({
       next: (dados) => this.categorias.set(dados),
@@ -87,6 +99,7 @@ export class Equipamentos implements OnInit {
   }
 
   iniciarEdicao(equipamento: EquipamentoResponse): void {
+    if (!this.podeGerenciar(equipamento)) return;
     this.equipamentoEmEdicao.set(equipamento);
     this.erro.set(null);
     this.modalAberto.set(true);
@@ -98,13 +111,21 @@ export class Equipamentos implements OnInit {
   }
 
   salvar({ id, payload }: { id: number | null; payload: EquipamentoFormPayload }): void {
+    if (id !== null && !this.registroLocal.podeGerenciarEquipamento(id)) {
+      this.erro.set('Você só pode editar equipamentos cadastrados por você.');
+      return;
+    }
+
     this.erro.set(null);
     const requisicao = id !== null
       ? this.equipamentoService.atualizar(id, payload)
       : this.equipamentoService.criar(payload);
 
     requisicao.subscribe({
-      next: () => {
+      next: (resposta) => {
+        if (id === null && resposta?.id) {
+          this.registroLocal.registrarDonoEquipamento(resposta.id);
+        }
         this.fecharModal();
         this.carregarEquipamentos();
       },
@@ -116,8 +137,31 @@ export class Equipamentos implements OnInit {
   }
 
   solicitarExclusao(equipamento: EquipamentoResponse): void {
+    if (!this.podeGerenciar(equipamento)) return;
     this.erro.set(null);
-    this.equipamentoParaExcluir.set(equipamento);
+
+    if (equipamento.statusItem === 'EMPRESTADO') {
+      this.erro.set('Não é possível excluir este equipamento porque ele está emprestado no momento.');
+      return;
+    }
+
+    this.emprestimoService.listar().subscribe({
+      next: (emprestimos) => {
+        const possuiVinculo = emprestimos.some((emp) => emp.equipamentoId === equipamento.id);
+
+        if (possuiVinculo) {
+          this.erro.set(
+            `Não é possível excluir o equipamento "${equipamento.nome}" porque existem empréstimos vinculados a ele.`
+          );
+          return;
+        }
+
+        this.equipamentoParaExcluir.set(equipamento);
+      },
+      error: () => {
+        this.equipamentoParaExcluir.set(equipamento);
+      }
+    });
   }
 
   cancelarExclusao(): void {
@@ -126,7 +170,7 @@ export class Equipamentos implements OnInit {
 
   confirmarExclusao(): void {
     const alvo = this.equipamentoParaExcluir();
-    if (!alvo) return;
+    if (!alvo || !this.podeGerenciar(alvo)) return;
 
     this.equipamentoParaExcluir.set(null);
     this.erro.set(null);
@@ -139,7 +183,17 @@ export class Equipamentos implements OnInit {
         this.carregarEquipamentos();
       },
       error: (err) => {
-        this.erro.set(extrairMensagemErro(err, 'Erro ao excluir equipamento.'));
+        const msgBruta = extrairMensagemErro(err, 'Erro ao excluir equipamento.');
+        const ehViolacaoFk =
+          msgBruta.toLowerCase().includes('foreign key constraint') ||
+          msgBruta.toLowerCase().includes('fk_emprestimo_equipamento') ||
+          msgBruta.toLowerCase().includes('cannot delete or update a parent row');
+
+        this.erro.set(
+          ehViolacaoFk
+            ? `Não é possível excluir o equipamento "${alvo.nome}" porque existem empréstimos vinculados a ele.`
+            : msgBruta
+        );
       }
     });
   }
