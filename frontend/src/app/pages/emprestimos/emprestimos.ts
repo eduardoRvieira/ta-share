@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { EmprestimoService } from '../../services/emprestimo.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { EquipamentoService } from '../../services/equipamento.service';
+import { RegistroLocalService } from '../../services/registro-local.service';
 import { EmprestimoResponse } from '../../models/emprestimo.model';
 import { UsuarioResponse } from '../../models/usuario.model';
 import { EquipamentoResponse } from '../../models/equipamento.model';
@@ -26,6 +27,7 @@ export class Emprestimos implements OnInit {
   private readonly emprestimoService = inject(EmprestimoService);
   private readonly usuarioService = inject(UsuarioService);
   private readonly equipamentoService = inject(EquipamentoService);
+  protected readonly registroLocal = inject(RegistroLocalService);
 
   protected readonly emprestimos = signal<EmprestimoResponse[]>([]);
   protected readonly usuarios = signal<UsuarioResponse[]>([]);
@@ -83,6 +85,10 @@ export class Emprestimos implements OnInit {
     this.carregarEmprestimos();
   }
 
+  podeGerenciar(emprestimo: EmprestimoResponse): boolean {
+    return this.registroLocal.podeGerenciarEmprestimo(emprestimo.id);
+  }
+
   carregarOpcoes(): void {
     this.usuarioService.listar().subscribe({
       next: (dados) => this.usuarios.set(dados),
@@ -118,6 +124,7 @@ export class Emprestimos implements OnInit {
   }
 
   iniciarEdicao(emprestimo: EmprestimoResponse): void {
+    if (!this.podeGerenciar(emprestimo)) return;
     this.emprestimoEmEdicao.set(emprestimo);
     this.erro.set(null);
     this.modalAberto.set(true);
@@ -129,13 +136,33 @@ export class Emprestimos implements OnInit {
   }
 
   salvar({ id, payload }: { id: number | null; payload: EmprestimoFormPayload }): void {
+    if (id !== null && !this.registroLocal.podeGerenciarEmprestimo(id)) {
+      this.erro.set('Você só pode editar empréstimos registrados por você.');
+      return;
+    }
+
     this.erro.set(null);
     const requisicao = id !== null
       ? this.emprestimoService.atualizar(id, payload)
       : this.emprestimoService.criar(payload);
 
     requisicao.subscribe({
-      next: () => {
+      next: (resposta) => {
+        if (id === null && resposta?.id) {
+          this.registroLocal.registrarDonoEmprestimo(resposta.id);
+          const nomeEquipamento =
+            resposta.equipamentoNome ||
+            this.mapaEquipamentos()[payload.equipamentoId]?.nome ||
+            'Equipamento de Tecnologia Assistiva';
+
+          this.registroLocal.registrarConfirmacaoPendente({
+            emprestimoId: resposta.id,
+            equipamentoId: payload.equipamentoId,
+            equipamentoNome: nomeEquipamento,
+            recebedorId: payload.usuarioId
+          });
+        }
+
         this.fecharModal();
         this.carregarEmprestimos();
         this.carregarOpcoes();
@@ -148,6 +175,8 @@ export class Emprestimos implements OnInit {
   }
 
   devolver(emprestimo: EmprestimoResponse): void {
+    if (!this.podeGerenciar(emprestimo)) return;
+
     this.erro.set(null);
     const hoje = new Date().toISOString().split('T')[0];
 
@@ -161,6 +190,7 @@ export class Emprestimos implements OnInit {
       observacoes: emprestimo.observacoes
     }).subscribe({
       next: () => {
+        this.registroLocal.removerPendencia(emprestimo.id);
         if (this.emprestimoEmEdicao()?.id === emprestimo.id) {
           this.fecharModal();
         }
@@ -174,6 +204,7 @@ export class Emprestimos implements OnInit {
   }
 
   solicitarExclusao(emprestimo: EmprestimoResponse): void {
+    if (!this.podeGerenciar(emprestimo)) return;
     this.erro.set(null);
     this.emprestimoParaExcluir.set(emprestimo);
   }
@@ -184,13 +215,14 @@ export class Emprestimos implements OnInit {
 
   confirmarExclusao(): void {
     const alvo = this.emprestimoParaExcluir();
-    if (!alvo) return;
+    if (!alvo || !this.podeGerenciar(alvo)) return;
 
     this.emprestimoParaExcluir.set(null);
     this.erro.set(null);
 
     this.emprestimoService.deletar(alvo.id).subscribe({
       next: () => {
+        this.registroLocal.removerPendencia(alvo.id);
         if (this.emprestimoEmEdicao()?.id === alvo.id) {
           this.fecharModal();
         }
